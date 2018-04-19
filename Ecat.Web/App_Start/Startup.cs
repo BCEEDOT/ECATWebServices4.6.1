@@ -9,11 +9,14 @@ using Ecat.Web;
 using Ecat.Web.Provider;
 using Elmah.Contrib.WebApi;
 using Microsoft.Owin;
+using Microsoft.Owin.Security.Jwt;
 using Microsoft.Owin.Security.OAuth;
 using Ninject.Web.Common.OwinHost;
 using Ninject.Web.WebApi;
 using Ninject.Web.WebApi.OwinHost;
 using Owin;
+using System.Configuration;
+using Microsoft.Owin.Security.DataHandler.Encoder;
 
 [assembly: OwinStartup(typeof(Startup))]
 
@@ -79,10 +82,28 @@ namespace Ecat.Web
 
         public void ConfigureOauth(IAppBuilder app)
         {
+
+            var issuer = ConfigurationManager.AppSettings["issuer"];
+            var secret = TextEncodings.Base64Url.Decode(ConfigurationManager.AppSettings["secret"]);
+
             AuthServerOptions.OabOpts = new OAuthBearerAuthenticationOptions();
-            var serverOpts = new AuthServerOptions();
+            var serverOpts = new AuthServerOptions(issuer);
+
+
+            app.UseJwtBearerAuthentication(new JwtBearerAuthenticationOptions
+            {
+               AuthenticationMode = Microsoft.Owin.Security.AuthenticationMode.Active,
+               AllowedAudiences = new[] { "Any"},
+           
+               IssuerSecurityTokenProviders = new IIssuerSecurityTokenProvider[] {
+                   new SymmetricKeyIssuerSecurityTokenProvider(issuer, secret)
+               }
+
+            });
+
             app.UseOAuthAuthorizationServer(serverOpts.OauthOpts);
-            app.UseOAuthBearerAuthentication(AuthServerOptions.OabOpts);
+
+            
         }
     }
 }

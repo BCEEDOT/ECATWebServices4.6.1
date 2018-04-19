@@ -256,3 +256,4 @@ FakesAssemblies/
 **/*.Server/ModelManifest.xml
 _Pvt_Extensions
 Ecat.Web/ecat/Client/
+Ecat.Web/keys.config

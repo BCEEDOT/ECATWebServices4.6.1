@@ -11,7 +11,7 @@ using TypeLite;
 namespace Ecat.Shared.Core.ModelLibrary.Common
 {
     [TsClass(Module = "ecat.entity.s.common")]
-    public class LoginToken
+    public class IdToken
     {
         public int PersonId { get; set; }
         [JsonIgnore][TsIgnore]
@@ -19,6 +19,14 @@ namespace Ecat.Shared.Core.ModelLibrary.Common
         public string AuthToken { get; set; }
         public DateTime TokenExpireWarning { get; set; }
         public DateTime TokenExpire { get; set; }
-        public Person Person { get; set; }
+        public string lastName { get; set; }
+        public string firstName { get; set; }
+        public string email { get; set; }
+        public string mpAffiliation { get; set; }
+        public string mpComponent { get; set; }
+        public string mpPaygrade { get; set; }
+        public string mpGender { get; set; }
+        public string mpInstituteRole { get; set; }
+        public bool registrationComplete { get; set; }
     }
 }

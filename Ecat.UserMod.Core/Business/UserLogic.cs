@@ -38,6 +38,11 @@ namespace Ecat.UserMod.Core
             }
         }
 
+        public IEnumerable<Person> GetUsers()
+        {
+            return _efCtx.Context.People;
+        }
+
         public async Task<List<object>> GetProfile() {
             var userWithProfiles = await _efCtx.Context.People.Where(p => p.PersonId == User.PersonId)
                 .Include(p => p.Student)

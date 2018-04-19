@@ -33,6 +33,13 @@ namespace Ecat.Web.Controllers
             return _userLogic.Metadata;
         }
 
+        //TODO: Remove for production
+        [HttpGet]
+        public IEnumerable<Person> GetUsers()
+        {
+            return _userLogic.GetUsers();
+        }
+
         [HttpPost]
         [AllowAnonymous]
         public SaveResult SaveChanges(JObject saveBundle)

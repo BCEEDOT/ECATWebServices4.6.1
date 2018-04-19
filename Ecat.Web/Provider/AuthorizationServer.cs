@@ -26,11 +26,14 @@ namespace Ecat.Web.Provider
     public class AuthServerOptions
     {
         internal static OAuthBearerAuthenticationOptions OabOpts { get; set; }
+        internal static string _issuer;
 
         private readonly IOAuthAuthorizationServerProvider _authProvider;
 
-        public AuthServerOptions()
+
+        public AuthServerOptions(string issuer)
         {
+            _issuer = issuer;
             _authProvider = new AuthorizationServer();
         }
 
@@ -42,14 +45,16 @@ namespace Ecat.Web.Provider
             AuthenticationMode = AuthenticationMode.Active,
             TokenEndpointPath = new PathString("/connect/token"),
             AccessTokenExpireTimeSpan = TimeSpan.FromHours(24),
-            Provider = _authProvider
+            Provider = _authProvider,
+            AccessTokenFormat = new CustomJwtFormat(_issuer)
+
         };
 
     }
 
     public class AuthorizationServer : OAuthAuthorizationServerProvider
     {
-        private LoginToken _loginToken;
+        private IdToken _idToken;
 
         public override Task ValidateClientAuthentication(OAuthValidateClientAuthenticationContext ctx)
         {
@@ -86,17 +91,49 @@ namespace Ecat.Web.Provider
 
             identity.AddClaim(new Claim(ClaimTypes.PrimarySid, person.PersonId.ToString()));
 
-            identity.AddClaim(new Claim(ClaimTypes.Role, MpRoleTransform.InstituteRoleToEnum(person.MpInstituteRole).ToString()));
+            //identity.AddClaim(new Claim(ClaimTypes.Role, MpRoleTransform.InstituteRoleToEnum(person.MpInstituteRole).ToString()));
 
-            _loginToken = new LoginToken
+            switch (person.MpInstituteRole)
+            {
+                case MpInstituteRoleId.Student:
+                    identity.AddClaim(new Claim(ClaimTypes.Role, MpInstituteRole.Student));
+                    break;
+                case MpInstituteRoleId.Faculty:
+                    identity.AddClaim(new Claim(ClaimTypes.Role, MpInstituteRole.Faculty));
+                    if (person.Faculty.IsCourseAdmin)
+                    {
+                        identity.AddClaim(new Claim(ClaimTypes.Role, MpInstituteRole.ISA));
+                    }
+                    else
+                    {
+                        identity.AddClaim(new Claim(ClaimTypes.Role, MpInstituteRole.notISA));
+                    }
+                    break;
+                default:
+                    identity.AddClaim(new Claim(ClaimTypes.Role, MpInstituteRoleId.Student));
+                    break;
+            }
+
+
+            _idToken = new IdToken
             {
                 TokenExpire = DateTime.Now.Add(TimeSpan.FromHours(24)),
                 TokenExpireWarning = DateTime.Now.Add(TimeSpan.FromHours(23)),
-                Person = person,
+                lastName = person.LastName,
+                firstName = person.FirstName,
+                email = person.Email,
+                mpAffiliation = person.MpAffiliation,
+                mpComponent = person.MpComponent,
+                mpPaygrade = person.MpPaygrade,
+                mpGender = person.MpGender,
+                mpInstituteRole = person.MpInstituteRole,
+                registrationComplete = person.RegistrationComplete,
                 PersonId = person.PersonId
             };
 
-            oauthCtx.Validated(identity);
+            var ticket = new AuthenticationTicket(identity, null);
+
+            oauthCtx.Validated(ticket);
 
             await Task.FromResult(oauthCtx.Validated());
 
@@ -104,14 +141,14 @@ namespace Ecat.Web.Provider
 
         public override Task TokenEndpoint(OAuthTokenEndpointContext context)
         {
-            var tokenString = JsonConvert.SerializeObject(_loginToken, Formatting.None,
+            var tokenString = JsonConvert.SerializeObject(_idToken, Formatting.None,
                 new JsonSerializerSettings
                 {
                     ContractResolver = new CamelCasePropertyNamesContractResolver(),
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 }
                 );
-            context.AdditionalResponseParameters.Add("loginToken", tokenString);
+            context.AdditionalResponseParameters.Add("id_token", tokenString);
             return Task.FromResult(true);
 
         }

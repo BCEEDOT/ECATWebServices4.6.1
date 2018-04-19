@@ -121,7 +121,7 @@
     <Compile Include="ModelLibrary\Common\Reconciliation.cs" />
     <Compile Include="ModelLibrary\Common\SpCommentBase.cs" />
     <Compile Include="ModelLibrary\Common\CommentCount.cs" />
-    <Compile Include="ModelLibrary\Common\LoginToken.cs" />
+    <Compile Include="ModelLibrary\Common\IdToken.cs" />
     <Compile Include="ModelLibrary\Common\WgCanPublish.cs" />
     <Compile Include="ModelLibrary\Designer\AssessMap.cs" />
     <Compile Include="ModelLibrary\Designer\CogInstrument.cs" />

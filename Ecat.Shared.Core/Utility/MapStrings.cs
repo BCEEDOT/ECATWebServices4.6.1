@@ -44,6 +44,15 @@
             Undefined = "Undefined";
     }
 
+    public static class MpInstituteRole
+    {
+        public const string
+             Student = "Student",
+             Faculty = "Faculty",
+             ISA = "ISA",
+             notISA = "notISA";
+    }
+
     public static class MpInstituteRoleName
     {
         public const string HqAdmin = "BCEE: ECAT 01 HQ",

@@ -57,12 +57,20 @@ namespace Ecat.Web.Controllers
                 return View();
             }
             
-            var token = new LoginToken
+            var token = new IdToken
             {
-                PersonId = person.PersonId,
-                Person = person,
                 TokenExpire = DateTime.Now.Add(TimeSpan.FromHours(24)),
                 TokenExpireWarning = DateTime.Now.Add(TimeSpan.FromHours(23)),
+                lastName = person.LastName,
+                firstName = person.FirstName,
+                email = person.Email,
+                mpAffiliation = person.MpAffiliation,
+                mpComponent = person.MpComponent,
+                mpPaygrade = person.MpPaygrade,
+                mpGender = person.MpGender,
+                mpInstituteRole = person.MpInstituteRole,
+                registrationComplete = person.RegistrationComplete,
+                PersonId = person.PersonId
             };
 
             var identity = UserAuthToken.GetClaimId;

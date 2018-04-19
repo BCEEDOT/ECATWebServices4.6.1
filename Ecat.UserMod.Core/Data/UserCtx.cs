@@ -36,7 +36,7 @@ namespace Ecat.UserMod.Core
             mb.Configurations.Add(new ConfigCogInventory());
             mb.Configurations.Add(new ConfigCogResponse());
 
-            mb.Entity<LoginToken>().HasKey(p => p.PersonId);
+            mb.Entity<IdToken>().HasKey(p => p.PersonId);
 
 
             mb.Ignore<MeetingAttendee>();
@@ -58,7 +58,7 @@ namespace Ecat.UserMod.Core
         public IDbSet<ProfileExternal> Externals { get; set; }
         public IDbSet<ProfileDesigner> Designers { get; set; } 
         public IDbSet<ProfileStaff> Staff { get; set; }
-        public IDbSet<LoginToken> LoginTokens { get; set; }
+        public IDbSet<IdToken> LoginTokens { get; set; }
         public IDbSet<CogEcmspeResult> CogECMSPEResult { get; set; }
         public IDbSet<CogEcpeResult> CogECPEResult { get; set; }
         public IDbSet<CogEsalbResult> CogESALBResult { get; set; }

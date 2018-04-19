@@ -38,7 +38,8 @@ namespace Ecat.Web.Utility
 
             var principal = actionContext.RequestContext.Principal as ClaimsPrincipal;
 
-            if (principal == null || !principal.Identity.IsAuthenticated)
+            //if (principal == null || !principal.Identity.IsAuthenticated)
+            if (principal == null)
             {
                 if (!SkipAuthorization(actionContext)) throw new HttpResponseException(HttpStatusCode.Unauthorized);
                 await Task.FromResult<object>(null);
