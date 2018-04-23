@@ -61,15 +61,15 @@ namespace Ecat.Web.Controllers
             {
                 TokenExpire = DateTime.Now.Add(TimeSpan.FromHours(24)),
                 TokenExpireWarning = DateTime.Now.Add(TimeSpan.FromHours(23)),
-                lastName = person.LastName,
-                firstName = person.FirstName,
-                email = person.Email,
-                mpAffiliation = person.MpAffiliation,
-                mpComponent = person.MpComponent,
-                mpPaygrade = person.MpPaygrade,
-                mpGender = person.MpGender,
-                mpInstituteRole = person.MpInstituteRole,
-                registrationComplete = person.RegistrationComplete,
+                LastName = person.LastName,
+                FirstName = person.FirstName,
+                Email = person.Email,
+                MpAffiliation = person.MpAffiliation,
+                MpComponent = person.MpComponent,
+                MpPaygrade = person.MpPaygrade,
+                MpGender = person.MpGender,
+                MpInstituteRole = person.MpInstituteRole,
+                RegistrationComplete = person.RegistrationComplete,
                 PersonId = person.PersonId
             };
 

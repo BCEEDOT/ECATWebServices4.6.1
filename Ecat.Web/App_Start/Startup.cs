@@ -17,6 +17,10 @@ using Ninject.Web.WebApi.OwinHost;
 using Owin;
 using System.Configuration;
 using Microsoft.Owin.Security.DataHandler.Encoder;
+using System.Web.Http.Cors;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json;
+using System.Net.Http.Formatting;
 
 [assembly: OwinStartup(typeof(Startup))]
 
@@ -34,8 +38,11 @@ namespace Ecat.Web
             #endregion
 
             #region Service-wide logging
-            config.Services.Add(typeof(IExceptionLogger), new ElmahExceptionLogger());
+            //config.Services.Add(typeof(IExceptionLogger), new ElmahExceptionLogger());
             #endregion
+
+            var cors = new EnableCorsAttribute("http://localhost:4200", "*","*");
+            config.EnableCors(cors);
 
             #region MVC Route Configuration
             RouteTable.Routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
@@ -74,6 +81,10 @@ namespace Ecat.Web
                 xmlSuptTypes.Remove(xmlTypes);
             }
             #endregion
+
+            //var settings = GlobalConfiguration.Configuration.Formatters.JsonFormatter.SerializerSettings;
+            //settings.Formatting = Formatting.Indented;
+            //settings.ContractResolver = new CamelCasePropertyNamesContractResolver();
 
             ConfigureOauth(app);
             app.UseNinjectMiddleware(NinjectConfig.GetKernal);

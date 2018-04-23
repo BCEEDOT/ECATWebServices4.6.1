@@ -19,14 +19,14 @@ namespace Ecat.Shared.Core.ModelLibrary.Common
         public string AuthToken { get; set; }
         public DateTime TokenExpireWarning { get; set; }
         public DateTime TokenExpire { get; set; }
-        public string lastName { get; set; }
-        public string firstName { get; set; }
-        public string email { get; set; }
-        public string mpAffiliation { get; set; }
-        public string mpComponent { get; set; }
-        public string mpPaygrade { get; set; }
-        public string mpGender { get; set; }
-        public string mpInstituteRole { get; set; }
-        public bool registrationComplete { get; set; }
+        public string LastName { get; set; }
+        public string FirstName { get; set; }
+        public string Email { get; set; }
+        public string MpAffiliation { get; set; }
+        public string MpComponent { get; set; }
+        public string MpPaygrade { get; set; }
+        public string MpGender { get; set; }
+        public string MpInstituteRole { get; set; }
+        public bool RegistrationComplete { get; set; }
     }
 }
