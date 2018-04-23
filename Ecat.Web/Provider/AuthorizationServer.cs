@@ -67,31 +67,36 @@ namespace Ecat.Web.Provider
 
             if (oauthCtx.UserName == null || oauthCtx.Password == null)
             {
-                oauthCtx.SetError("invalid_grant", "Null credentials were preseted");
+                oauthCtx.SetError("invalid_grant", "No Credentials");
                 return;
+        
+
             }
 
             Person person;
 
             using (var dbCtx = new UserCtx())
             {
-                //TODO: Need to fix throws 500 error if username not found.
-                person = await dbCtx.People.Include(user => user.Security).SingleAsync(user => user.Email == oauthCtx.UserName);
+                person = await dbCtx.People.Include(user => user.Security).SingleOrDefaultAsync(user => user.Email == oauthCtx.UserName);
+            }
+
+            if (person == null) {
+
+                oauthCtx.SetError("invalid_grant", "Invalid username or password");
+                return;
             }
 
             var hasValidPassword = PasswordHash.ValidatePassword(oauthCtx.Password, person.Security.PasswordHash);
 
             if (!hasValidPassword)
             {
-                 
-                throw new UnauthorizedAccessException("Invalid Username/Password Combination");
+                oauthCtx.SetError("invalid_grant", "Invalid username or password");
+                return;
             }
 
             var identity = UserAuthToken.GetClaimId;
 
             identity.AddClaim(new Claim(ClaimTypes.PrimarySid, person.PersonId.ToString()));
-
-            //identity.AddClaim(new Claim(ClaimTypes.Role, MpRoleTransform.InstituteRoleToEnum(person.MpInstituteRole).ToString()));
 
             switch (person.MpInstituteRole)
             {
