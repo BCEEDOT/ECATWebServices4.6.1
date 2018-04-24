@@ -261,13 +261,13 @@
   <ItemGroup>
     <Content Include="App_Readme\Elmah.txt" />
     <Content Include="BCEE.png" />
+    <Content Include="Ecat\**" />
     <Content Include="favicon.ico" />
     <Content Include="index.html" />
     <Content Include="skydiving.jpeg" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="wwwroot\index.html" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\NinjectConfig.cs" />

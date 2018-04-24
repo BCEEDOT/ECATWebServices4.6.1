@@ -2,6 +2,7 @@ TestDbSeed.sql
 *.js
 *.map
 !Ecat.Client/gulpfile.js
+Ecat.Web/ecat/**
 Ecat.Client/_configuration/typings
 Ecat.Web/Client/**/*.*
 Ecat.Web/ecat/Client/**/*.*
