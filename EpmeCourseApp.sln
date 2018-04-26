@@ -51,6 +51,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECATDataLib", "ECATDataLib\ECATDataLib.csproj", "{F7127AF7-2AA4-4967-9EC0-DADD706832AC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECATBusinessLib", "ECATBusinessLib\ECATBusinessLib.csproj", "{BCD60E56-0185-4330-ADCF-AFCC78A134E2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F7127AF7-2AA4-4967-9EC0-DADD706832AC} = {F7127AF7-2AA4-4967-9EC0-DADD706832AC}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
