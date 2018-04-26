@@ -10,6 +10,7 @@ using Ecat.Data.Models.Designer;
 //using Ecat.Shared.Core.ModelLibrary.School;
 using Ecat.Data.Models.School;
 //using Ecat.Shared.Core.Utility.Validation;
+using Ecat.Data.Validation;
 using TypeLite;
 
 namespace Ecat.Data.Models.Student

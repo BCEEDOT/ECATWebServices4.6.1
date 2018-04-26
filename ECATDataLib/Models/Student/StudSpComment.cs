@@ -9,13 +9,15 @@ using Ecat.Data.Models.Interface;
 //using Ecat.Shared.Core.ModelLibrary.School;
 using Ecat.Data.Models.School;
 //using Ecat.Shared.Core.Utility;
+using Ecat.Data.Static;
 using Newtonsoft.Json;
 using TypeLite;
 
 namespace Ecat.Data.Models.Student
 {
     [TsClass(Module = "ecat.entity.s.learner")]
-    [DeletableGuard(AuthorizedDeleters = new[] {RoleMap.Student})]
+    //TODO: ECAT2 deleteableguard removal?
+    //[DeletableGuard(AuthorizedDeleters = new[] {RoleMap.Student})]
     public class StudSpComment  : IAuditable, IWorkGroupMonitored, ICourseMonitored
     {
         public string EntityId => $"{AuthorPersonId}|{RecipientPersonId}|{CourseId}|{WorkGroupId}";

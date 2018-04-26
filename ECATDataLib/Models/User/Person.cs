@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 //using Ecat.Shared.Core.ModelLibrary.Common;
 //using Ecat.Shared.Core.Utility.Validation;
+using Ecat.Data.Validation;
 using Newtonsoft.Json;
 using TypeLite;
 
@@ -18,8 +19,7 @@ namespace Ecat.Data.Models.User
     /// <see cref="GuardUser.BeforeSaveEntities"/>
 
     [TsClass(Module="ecat.entity.s.user")]
-    //TODO: ECAT2 461
-    //[PersonMappedPropValid]
+    [PersonMappedPropValid]
     public class Person
     {
         public int PersonId { get; set; }

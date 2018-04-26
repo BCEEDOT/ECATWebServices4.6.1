@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 //using Ecat.Shared.Core.Utility;
+using Ecat.Data.Static;
 using TypeLite;
 
 namespace Ecat.Data.Models.School
