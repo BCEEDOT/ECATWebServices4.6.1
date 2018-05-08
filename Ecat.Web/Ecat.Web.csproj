@@ -345,6 +345,14 @@
       <Project>{572c5a4b-622f-4ed1-916d-a09192713b66}</Project>
       <Name>Ecat.UserMod.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ECATBusinessLib\ECATBusinessLib.csproj">
+      <Project>{bcd60e56-0185-4330-adcf-afcc78a134e2}</Project>
+      <Name>ECATBusinessLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ECATDataLib\ECATDataLib.csproj">
+      <Project>{f7127af7-2aa4-4967-9ec0-dadd706832ac}</Project>
+      <Name>ECATDataLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

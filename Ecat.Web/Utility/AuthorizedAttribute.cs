@@ -13,9 +13,12 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 using System.Web.Mvc;
-using Ecat.Shared.Core.ModelLibrary.User;
-using Ecat.Shared.Core.Utility;
-using Ecat.UserMod.Core;
+//using Ecat.Shared.Core.ModelLibrary.User;
+//using Ecat.Shared.Core.Utility;
+//using Ecat.UserMod.Core;
+using Ecat.Data.Static;
+using Ecat.Data.Models.User;
+using Ecat.Data.Contexts;
 using Ecat.Web.Controllers;
 using AllowAnonymousAttribute = System.Web.Http.AllowAnonymousAttribute;
 using AuthorizeAttribute = System.Web.Http.AuthorizeAttribute;
@@ -80,7 +83,7 @@ namespace Ecat.Web.Utility
 
             Person user;
 
-            using (var ctx = new UserCtx())
+            using (var ctx = new EcatContext())
             {
                 user = await ((DbSet<Person>)ctx.People).FindAsync(cancellationToken, parsedUid);
 

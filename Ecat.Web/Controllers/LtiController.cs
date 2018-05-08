@@ -5,11 +5,16 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Mvc;
-using Ecat.Shared.Core.ModelLibrary.Common;
-using Ecat.Shared.Core.ModelLibrary.User;
-using Ecat.Shared.Core.Utility;
-using Ecat.Shared.DbMgr.Context;
-using Ecat.UserMod.Core;
+//using Ecat.Shared.Core.ModelLibrary.Common;
+//using Ecat.Shared.Core.ModelLibrary.User;
+//using Ecat.Shared.Core.Utility;
+//using Ecat.Shared.DbMgr.Context;
+//using Ecat.UserMod.Core;
+using Ecat.Business.Repositories.Interface;
+using Ecat.Business.Utilities;
+using Ecat.Data.Models.User;
+using Ecat.Data.Static;
+using Ecat.Data.Models.Common;
 using Ecat.Web.Provider;
 using LtiLibrary.AspNet.Extensions;
 using LtiLibrary.Core.Lti1;
@@ -21,11 +26,12 @@ namespace Ecat.Web.Controllers
 {
     public class LtiController : Controller
     {
-        private readonly IUserLogic _userLogic;
+        //private readonly IUserLogic _userLogic;
+        private readonly IUserRepo _userRepo;
 
-        public LtiController(IUserLogic userLogic)
+        public LtiController(IUserRepo userRepo)
         {
-            _userLogic = userLogic;
+            _userRepo = userRepo;
         }
      
         // GET: Lti
@@ -45,7 +51,7 @@ namespace Ecat.Web.Controllers
 
             try
             {
-                person = await _userLogic.ProcessLtiUser(ltiRequest);
+                person = await _userRepo.ProcessLtiUser(ltiRequest);
             }
             catch (InvalidEmailException ex)
             {

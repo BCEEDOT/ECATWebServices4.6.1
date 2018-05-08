@@ -5,8 +5,9 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using Breeze.WebApi2;
-using Ecat.Shared.Core.ModelLibrary.User;
-using Ecat.Shared.DbMgr.Context;
+//using Ecat.Shared.Core.ModelLibrary.User;
+//using Ecat.Shared.DbMgr.Context;
+using Ecat.Data.Models.User;
 
 namespace Ecat.Web.Controllers
 {

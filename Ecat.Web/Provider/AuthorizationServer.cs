@@ -5,11 +5,16 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
-using Ecat.Shared.Core.ModelLibrary.Common;
-using Ecat.Shared.Core.ModelLibrary.User;
-using Ecat.Shared.Core.Provider;
-using Ecat.Shared.Core.Utility;
-using Ecat.UserMod.Core;
+//using Ecat.Shared.Core.ModelLibrary.Common;
+//using Ecat.Shared.Core.ModelLibrary.User;
+//using Ecat.Shared.Core.Provider;
+//using Ecat.Shared.Core.Utility;
+//using Ecat.UserMod.Core;
+using Ecat.Data.Models.Common;
+using Ecat.Data.Static;
+using Ecat.Data.Models.User;
+using Ecat.Data.Contexts;
+using Ecat.Business.Utilities;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.OAuth;
@@ -75,9 +80,12 @@ namespace Ecat.Web.Provider
 
             Person person;
 
-            using (var dbCtx = new UserCtx())
+            using (var dbCtx = new UserMetadataCtx())//UserCtx())
             {
-                person = await dbCtx.People.Include(user => user.Security).SingleOrDefaultAsync(user => user.Email == oauthCtx.UserName);
+                person = await dbCtx.People.Include(user => user.Security)
+                    .Include(user => user.Student)
+                    .Include(user => user.Faculty)
+                    .SingleOrDefaultAsync(user => user.Email == oauthCtx.UserName);
             }
 
             if (person == null) {
