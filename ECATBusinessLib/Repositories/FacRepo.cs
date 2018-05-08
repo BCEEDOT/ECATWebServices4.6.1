@@ -29,13 +29,13 @@ using Newtonsoft.Json.Linq;
 namespace Ecat.Business.Repositories
 {
 
-    public class FacLogic : IFacRepo
+    public class FacRepo : IFacRepo
     {
         //private readonly IFacRepo _efCtx;
         public Person FacultyPerson { get; set; }
         private readonly EFContextProvider<EcatContext> _efCtx;
 
-        public FacLogic(EFContextProvider<EcatContext> efCtx)
+        public FacRepo(EFContextProvider<EcatContext> efCtx)
         {
             //_efCtx = repo;
             _efCtx = efCtx;

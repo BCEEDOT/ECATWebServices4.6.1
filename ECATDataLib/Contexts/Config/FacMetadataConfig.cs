@@ -6,7 +6,7 @@ using Ecat.Data.Models.School;
 //using Ecat.Shared.Core.ModelLibrary.User;
 using Ecat.Data.Models.User;
 
-namespace Ecat.FacMod.Core
+namespace Ecat.Data.Contexts.Config
 {
     internal class FacConfigStudSpInstrument : EntityTypeConfiguration<SpInstrument>
     {

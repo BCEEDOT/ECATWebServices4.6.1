@@ -12,6 +12,7 @@ using Ecat.Data.Models.Common;
 using Ecat.Data.Models.Designer;
 //using Ecat.Shared.Core.ModelLibrary.Faculty;
 using Ecat.Data.Models.Faculty;
+using Ecat.Data.Models.Faculty.Config;
 //using Ecat.Shared.Core.ModelLibrary.Learner;
 using Ecat.Data.Models.Student;
 using Ecat.Data.Models.Student.Config;
@@ -22,6 +23,7 @@ using Ecat.Data.Models.School.Config;
 using Ecat.Data.Models.User;
 //using Ecat.Shared.DbMgr.Config;
 //using Ecat.Shared.DbMgr.Context;
+using Ecat.Data.Contexts.Config;
 
 namespace Ecat.Data.Contexts
 {
@@ -35,6 +37,21 @@ namespace Ecat.Data.Contexts
             mb.Configurations.Add(new ConfigStratResponse());
             mb.Configurations.Add(new ConfigStudentInCourse());
             mb.Configurations.Add(new ConfigStratResult());
+
+            mb.Configurations.Add(new StudConfigSanitizedComment());
+            mb.Configurations.Add(new StudConfigSanitizedResponse());
+            mb.Configurations.Add(new StudConfigSpInstrument());
+            mb.Configurations.Add(new StudConfigSpInventory());
+            mb.Configurations.Add(new StudConfigStudWrkGrp());
+            mb.Configurations.Add(new StudConfigCrse());
+            mb.Configurations.Add(new StudConfigProfileStudent());
+            mb.Configurations.Add(new StudConfigPerson());
+            mb.Configurations.Add(new StudConfigCrseStudInWg());
+            mb.Configurations.Add(new StudConfigSpComment());
+            mb.Configurations.Add(new ConfigSpCommentFlag());
+            mb.Configurations.Add(new ConfigFacSpResponse());
+            mb.Configurations.Add(new ConfigFacultyInCourse());
+            mb.Configurations.Add(new StudConfigProfileFaculty());
 
             mb.Ignore(new List<Type>
             {
@@ -59,14 +76,14 @@ namespace Ecat.Data.Contexts
                 .Where(t => typeof(IAuditable).IsAssignableFrom(t))
                 .Configure(p => p.Ignore("ModifiedDate"));
 
-            var typesToRegister = Assembly.GetExecutingAssembly().GetTypes()
-                .Where(type => !string.IsNullOrEmpty(type.Namespace))
-                .Where(type => type.BaseType != null && type.BaseType.IsGenericType && type.BaseType.GetGenericTypeDefinition() == typeof (EntityTypeConfiguration<>));
+            //var typesToRegister = Assembly.GetExecutingAssembly().GetTypes()
+            //    .Where(type => !string.IsNullOrEmpty(type.Namespace))
+            //    .Where(type => type.BaseType != null && type.BaseType.IsGenericType && type.BaseType.GetGenericTypeDefinition() == typeof (EntityTypeConfiguration<>));
 
-            foreach (var configurationInstance in typesToRegister.Select(Activator.CreateInstance))
-            {
-                mb.Configurations.Add((dynamic)configurationInstance);
-            }
+            //foreach (var configurationInstance in typesToRegister.Select(Activator.CreateInstance))
+            //{
+            //    mb.Configurations.Add((dynamic)configurationInstance);
+            //}
 
             mb.Ignore<CourseReconResult>();
             mb.Ignore<MemReconResult>();

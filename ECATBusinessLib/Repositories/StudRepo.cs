@@ -24,13 +24,13 @@ using Newtonsoft.Json.Linq;
 namespace Ecat.Business.Repositories
 {
 
-    public class StudLogic : IStudRepo
+    public class StudRepo : IStudRepo
     {
         private readonly EFContextProvider<EcatContext> _efCtx;
 
         public Person StudentPerson { get; set; }
 
-        public StudLogic(EFContextProvider<EcatContext> efCtx)
+        public StudRepo(EFContextProvider<EcatContext> efCtx)
         {
             _efCtx = efCtx;
         }
@@ -220,7 +220,7 @@ namespace Ecat.Business.Repositories
             get
             {
                 //TODO: ECAT2
-                var metadataCtx = new EFContextProvider<StudMetadataCtx>();
+                var metadataCtx = new EFContextProvider<EcatContext>();
                 return metadataCtx.Metadata();
             }
         }

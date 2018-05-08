@@ -49,7 +49,12 @@ namespace Ecat.Data.Contexts
                 .Configure(type => type.ToTable(type.ClrType.Name.Substring(2)));
 
             var typesToRegister = Assembly.GetExecutingAssembly().GetTypes()
-                .Where(type => type.IsClass && type.Namespace == "Ecat.Shared.DbMgr.Config");
+                .Where(type => type.IsClass && (type.Namespace == "Ecat.Data.Models.Cognitive.Config"
+                || type.Namespace == "Ecat.Data.Models.Designer.Config"
+                || type.Namespace == "Ecat.Data.Models.Faculty.Config"
+                || type.Namespace == "Ecat.Data.Models.School.Config"
+                || type.Namespace == "Ecat.Data.Models.Student.Config"
+                || type.Namespace == "Ecat.Data.Models.User.Config"));
 
             foreach (var configurationInstance in typesToRegister.Select(Activator.CreateInstance))
             {

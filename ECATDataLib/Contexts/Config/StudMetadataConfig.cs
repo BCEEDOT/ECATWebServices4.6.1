@@ -8,7 +8,7 @@ using Ecat.Data.Models.School;
 //using Ecat.Shared.Core.ModelLibrary.User;
 using Ecat.Data.Models.User;
 
-namespace Ecat.StudMod.Core
+namespace Ecat.Data.Contexts.Config
 {
 
     public class StudConfigSanitizedComment : EntityTypeConfiguration<SanitizedSpComment>
@@ -94,6 +94,16 @@ namespace Ecat.StudMod.Core
             HasKey(p => p.PersonId)
                 .HasRequired(p => p.Person)
                 .WithOptional(p => p.Student);
+        }
+    }
+
+    internal class StudConfigProfileFaculty : EntityTypeConfiguration<ProfileFaculty>
+    {
+        public StudConfigProfileFaculty()
+        {
+            HasKey(p => p.PersonId)
+                .HasRequired(p => p.Person)
+                .WithOptional(p => p.Faculty);
         }
     }
 

@@ -22,6 +22,7 @@ using Ecat.Data.Models.School.Config;
 using Ecat.Data.Models.User;
 //using Ecat.Shared.DbMgr.Config;
 //using Ecat.Shared.DbMgr.Context;
+using Ecat.Data.Contexts.Config;
 
 namespace Ecat.Data.Contexts
 {
@@ -44,14 +45,22 @@ namespace Ecat.Data.Contexts
             mb.Configurations.Add(new ConfigFacultyInCourse());
             mb.Configurations.Add(new ConfigStudentInCourse());
 
-            var typesToRegister = Assembly.GetExecutingAssembly().GetTypes()
-                .Where(type => !string.IsNullOrEmpty(type.Namespace))
-                .Where(type => type.BaseType != null && type.BaseType.IsGenericType && type.BaseType.GetGenericTypeDefinition() == typeof(EntityTypeConfiguration<>));
+            mb.Configurations.Add(new FacConfigStudSpInstrument());
+            mb.Configurations.Add(new FacConfigStudSpInventory());
+            mb.Configurations.Add(new FacConfigProfileStudent());
+            mb.Configurations.Add(new FacConfigProfileFaculty());
+            mb.Configurations.Add(new FacConfigPerson());
+            mb.Configurations.Add(new FacConfigStudWrkGrp());
+            mb.Configurations.Add(new FacConfigStudCrse());
 
-            foreach (var configurationInstance in typesToRegister.Select(Activator.CreateInstance))
-            {
-                mb.Configurations.Add((dynamic)configurationInstance);
-            }
+            //var typesToRegister = Assembly.GetExecutingAssembly().GetTypes()
+            //    .Where(type => !string.IsNullOrEmpty(type.Namespace))
+            //    .Where(type => type.BaseType != null && type.BaseType.IsGenericType && type.BaseType.GetGenericTypeDefinition() == typeof(EntityTypeConfiguration<>));
+
+            //foreach (var configurationInstance in typesToRegister.Select(Activator.CreateInstance))
+            //{
+            //    mb.Configurations.Add((dynamic)configurationInstance);
+            //}
 
             mb.Ignore(new List<Type>
             {
