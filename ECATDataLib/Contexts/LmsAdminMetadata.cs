@@ -23,7 +23,7 @@ using Ecat.Data.Models.User;
 
 namespace Ecat.Data.Contexts
 {
-    public class LmsAdminMetadataCtx : EcatContext
+    public class LmsAdminMetadataCtx : ContextBase<LmsAdminMetadataCtx>
     {
         protected override void OnModelCreating(DbModelBuilder mb)
         {
@@ -59,6 +59,9 @@ namespace Ecat.Data.Contexts
 
             mb.Configurations.Add(new ConfigProfileStudent());
             mb.Configurations.Add(new ConfigProfileFaculty());
+            mb.Configurations.Add(new ConfigProfileDesigner());
+            mb.Configurations.Add(new ConfigProfileExternal());
+            mb.Configurations.Add(new ConfigProfileStaff());
             mb.Configurations.Add(new ConfigSpResult());
             mb.Configurations.Add(new ConfigStratResult());
             mb.Configurations.Add(new ConfigCrseStudInGroup());
@@ -83,6 +86,8 @@ namespace Ecat.Data.Contexts
             mb.Ignore<FacSpCommentFlag>();
             mb.Ignore<FacSpComment>();
             mb.Ignore<RoadRunner>();
+            //mb.Ignore<KcResponse>();
+            //mb.Ignore<KcResult>();
 
             mb.Entity<WorkGroup>()
                 .HasOptional(p => p.ReconResult)

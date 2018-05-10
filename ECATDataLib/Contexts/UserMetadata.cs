@@ -12,6 +12,7 @@ using Ecat.Data.Models.Designer.Config;
 using Ecat.Data.Models.Common;
 //using Ecat.Shared.Core.ModelLibrary.School;
 using Ecat.Data.Models.School;
+using Ecat.Data.Models.Student;
 //using Ecat.Shared.Core.ModelLibrary.Staff.MeetingTaker;
 //using Ecat.Shared.Core.ModelLibrary.User;
 using Ecat.Data.Models.User;
@@ -54,7 +55,11 @@ namespace Ecat.Data.Contexts
                 typeof(FacultyInCourse),
                 //typeof(MeetingAttendee),
                 typeof(StudentInCourse),
-                typeof(CrseStudentInGroup)
+                typeof(CrseStudentInGroup),
+                //typeof(KcInstrument),
+                //typeof(KcInventory),
+                //typeof(KcResponse),
+                //typeof(KcResult)
             });
 
             base.OnModelCreating(mb);

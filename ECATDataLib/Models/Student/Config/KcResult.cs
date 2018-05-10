@@ -1,17 +1,17 @@
-﻿using System.Data.Entity.ModelConfiguration;
-//using Ecat.Shared.Core.ModelLibrary.Learner;
+﻿//using System.Data.Entity.ModelConfiguration;
+////using Ecat.Shared.Core.ModelLibrary.Learner;
 
-namespace Ecat.Data.Models.Student.Config
-{
-    public class ConfigKcResult : EntityTypeConfiguration<KcResult>
-    {
-        public ConfigKcResult()
-        {
-            HasKey(p => new {p.StudentId, p.CourseId, p.Version});
-            HasMany( p => p.Responses)
-            .WithOptional(p => p.Result)
-            .HasForeignKey(p => new { p.StudentId, p.CourseId, p.Version })
-            .WillCascadeOnDelete(false);
-        }
-    }
-}
+//namespace Ecat.Data.Models.Student.Config
+//{
+//    public class ConfigKcResult : EntityTypeConfiguration<KcResult>
+//    {
+//        public ConfigKcResult()
+//        {
+//            HasKey(p => new {p.StudentId, p.CourseId, p.Version});
+//            HasMany( p => p.Responses)
+//            .WithOptional(p => p.Result)
+//            .HasForeignKey(p => new { p.StudentId, p.CourseId, p.Version })
+//            .WillCascadeOnDelete(false);
+//        }
+//    }
+//}

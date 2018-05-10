@@ -28,7 +28,7 @@ namespace Ecat.Data.Models.School
         public ProfileStudent Student { get; set; }
 
         public ICollection<CrseStudentInGroup> WorkGroupEnrollments { get; set; }
-        public ICollection<KcResponse> KcResponses { get; set; }
+        //public ICollection<KcResponse> KcResponses { get; set; }
         [JsonIgnore][TsIgnore]
         public bool IsDeleted { get; set; }
 

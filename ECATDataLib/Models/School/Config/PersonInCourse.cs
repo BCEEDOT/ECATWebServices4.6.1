@@ -31,7 +31,7 @@ namespace Ecat.Data.Models.School.Config
                 .HasForeignKey(p => p.CourseId)
                 .WillCascadeOnDelete(false);
 
-            Ignore(p => p.KcResponses);
+            //Ignore(p => p.KcResponses);
         }
     }
 

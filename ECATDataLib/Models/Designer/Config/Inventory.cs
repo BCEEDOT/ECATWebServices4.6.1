@@ -17,13 +17,13 @@ namespace Ecat.Data.Models.Designer.Config
     }
 
 
-    public class ConfigKcInventory : EntityTypeConfiguration<KcInventory>
-    {
-        public ConfigKcInventory()
-        {
+    //public class ConfigKcInventory : EntityTypeConfiguration<KcInventory>
+    //{
+    //    public ConfigKcInventory()
+    //    {
 
-        }
-    }
+    //    }
+    //}
 
 
     public class ConfigCogInventory : EntityTypeConfiguration<CogInventory>

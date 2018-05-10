@@ -24,7 +24,7 @@ namespace Ecat.Data.Models.Designer
         public string FacStratCol { get; set; }
 
         public SpInstrument AssignedSpInstr { get; set; }
-        public KcInstrument AssignedKcInstr { get; set; }
+        //public KcInstrument AssignedKcInstr { get; set; }
         public ICollection<WorkGroup> WorkGroups { get; set; }
     }
 }

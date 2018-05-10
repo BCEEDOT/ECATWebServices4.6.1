@@ -53,7 +53,7 @@ namespace Ecat.Data.Models.School
         public ICollection<StratResult> SpStratResults { get; set; }
 
         public SpInstrument AssignedSpInstr { get; set; }
-        public KcInstrument AssignedKcInstr { get; set; }
+        //public KcInstrument AssignedKcInstr { get; set; }
         public bool CanPublish { get; set; }
         public int? ModifiedById { get; set; }
         public DateTime? ModifiedDate { get; set; }

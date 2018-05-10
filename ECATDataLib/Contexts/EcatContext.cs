@@ -104,8 +104,8 @@ namespace Ecat.Data.Contexts
         //public DbSet<SpAssessMap> SpAssessMaps { get; set; }
         public DbSet<CogInstrument> CogInstruments { get; set; }
         public DbSet<CogInventory> CogInventories { get; set; }
-        public DbSet<KcInstrument> KcInstruments { get; set; }
-        public DbSet<KcInventory> KcInventories { get; set; }
+        //public DbSet<KcInstrument> KcInstruments { get; set; }
+        //public DbSet<KcInventory> KcInventories { get; set; }
         public DbSet<SpInstrument> SpInstruments { get; set; }
         public DbSet<SpInventory> SpInventories { get; set; }
         public DbSet<WorkGroupModel> WgModels { get; set; }
@@ -146,8 +146,8 @@ namespace Ecat.Data.Contexts
         public DbSet<StudSpComment> StudSpComments { get; set; }
         public DbSet<StratResponse> SpStratResponses { get; set; }
         public DbSet<StratResult> SpStratResults { get; set; }
-        public DbSet<KcResponse> KcResponses { get; set; }
-        public DbSet<KcResult> KcResults { get; set; }
+        //public DbSet<KcResponse> KcResponses { get; set; }
+        //public DbSet<KcResult> KcResults { get; set; }
 
         #endregion
 

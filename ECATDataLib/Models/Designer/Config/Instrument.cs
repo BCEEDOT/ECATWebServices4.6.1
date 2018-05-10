@@ -22,17 +22,17 @@ namespace Ecat.Data.Models.Designer.Config
         }
     }
 
-    public class ConfigKcInstrument : EntityTypeConfiguration<KcInstrument>
-    {
-        public ConfigKcInstrument()
-        {
-            Property(p => p.Instructions).IsMaxLength();
-            HasMany(p => p.AssignedGroups)
-                .WithOptional(p => p.AssignedKcInstr)
-                .HasForeignKey(p => p.AssignedKcInstrId)
-                .WillCascadeOnDelete(false);
-        }
-    }
+    //public class ConfigKcInstrument : EntityTypeConfiguration<KcInstrument>
+    //{
+    //    public ConfigKcInstrument()
+    //    {
+    //        Property(p => p.Instructions).IsMaxLength();
+    //        HasMany(p => p.AssignedGroups)
+    //            .WithOptional(p => p.AssignedKcInstr)
+    //            .HasForeignKey(p => p.AssignedKcInstrId)
+    //            .WillCascadeOnDelete(false);
+    //    }
+    //}
 
 
     public class ConfigCogInstrument : EntityTypeConfiguration<CogInstrument>

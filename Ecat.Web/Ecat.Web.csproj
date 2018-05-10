@@ -317,34 +317,6 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Ecat.DesignerMod.Core\Ecat.DesignerMod.Core.csproj">
-      <Project>{d85ccea2-4227-4ad6-a889-73feaa4a81e2}</Project>
-      <Name>Ecat.DesignerMod.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Ecat.FacMod.Core\Ecat.FacMod.Core.csproj">
-      <Project>{2e40b8b0-8966-43db-9bb7-24e06136c8f0}</Project>
-      <Name>Ecat.FacMod.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Ecat.LmsAdmin.Mod\Ecat.LmsAdmin.Mod.csproj">
-      <Project>{774c5ec1-feb0-443a-9377-c28680975665}</Project>
-      <Name>Ecat.LmsAdmin.Mod</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Ecat.Shared.Core\Ecat.Shared.Core.csproj">
-      <Project>{d7f032f9-5296-4093-bb4a-ea9a924b08cf}</Project>
-      <Name>Ecat.Shared.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Ecat.Shared.DbMgr\Ecat.Shared.DbMgr.csproj">
-      <Project>{20B162D3-AC45-4E9A-A55B-498E45F6876E}</Project>
-      <Name>Ecat.Shared.DbMgr</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Ecat.StudMod.Core\Ecat.StudMod.Core.csproj">
-      <Project>{0da9e75f-a361-49ff-927e-e6cbfc97895f}</Project>
-      <Name>Ecat.StudMod.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Ecat.UserMod.Core\Ecat.UserMod.Core.csproj">
-      <Project>{572c5a4b-622f-4ed1-916d-a09192713b66}</Project>
-      <Name>Ecat.UserMod.Core</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ECATBusinessLib\ECATBusinessLib.csproj">
       <Project>{bcd60e56-0185-4330-adcf-afcc78a134e2}</Project>
       <Name>ECATBusinessLib</Name>

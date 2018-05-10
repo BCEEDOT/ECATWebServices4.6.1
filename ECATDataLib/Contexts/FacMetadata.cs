@@ -68,8 +68,8 @@ namespace Ecat.Data.Contexts
                 typeof (ProfileDesigner),
                 typeof (Security),
                 typeof (ProfileStaff),
-                typeof (KcResponse),
-                typeof (KcResult),
+                //typeof (KcResponse),
+                //typeof (KcResult),
                 typeof (SanitizedSpComment),
                 typeof (SanitizedSpResponse)
             });

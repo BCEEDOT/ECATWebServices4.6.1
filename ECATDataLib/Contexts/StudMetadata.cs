@@ -64,8 +64,8 @@ namespace Ecat.Data.Contexts
                 typeof (FacSpResponse),
                 typeof (FacStratResponse),
                 typeof (FacSpComment),
-                typeof (KcResponse),
-                typeof (KcResult)
+                //typeof (KcResponse),
+                //typeof (KcResult)
             });
 
             mb.Types()
