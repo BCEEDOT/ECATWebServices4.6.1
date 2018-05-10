@@ -77,6 +77,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Guards\FacultyGuardian.cs" />
+    <Compile Include="Guards\IsaGuardian.cs" />
     <Compile Include="Guards\MonitoredGuard.cs" />
     <Compile Include="Guards\StudentGuardian.cs" />
     <Compile Include="Guards\UserGuardian.cs" />

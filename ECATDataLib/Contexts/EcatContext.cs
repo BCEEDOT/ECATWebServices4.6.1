@@ -115,6 +115,7 @@ namespace Ecat.Data.Contexts
 
         public DbSet<FacSpResponse> FacSpResponses { get; set; }
         public DbSet<FacSpComment> FacSpComments { get; set; }
+        public DbSet<FacSpCommentFlag> FacSpCommentFlags { get; set; }
         public DbSet<FacStratResponse> FacStratResponses { get; set; }
 
         #endregion
@@ -144,6 +145,7 @@ namespace Ecat.Data.Contexts
         public DbSet<SpResponse> SpResponses { get; set; }
         public DbSet<SpResult> SpResults { get; set; }
         public DbSet<StudSpComment> StudSpComments { get; set; }
+        public DbSet<StudSpCommentFlag> StudSpCommentFlags { get; set; }
         public DbSet<StratResponse> SpStratResponses { get; set; }
         public DbSet<StratResult> SpStratResults { get; set; }
         //public DbSet<KcResponse> KcResponses { get; set; }

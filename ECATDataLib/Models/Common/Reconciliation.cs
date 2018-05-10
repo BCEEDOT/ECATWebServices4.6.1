@@ -58,4 +58,16 @@ namespace Ecat.Data.Models.Common
         public string GroupId { get; set; }
         public string GroupMembershipId { get; set; }
     }
+
+    public class StudentOnTheMove
+    {
+        public CrseStudentInGroup Student { get; set; }
+        public int StudentId { get; set; }
+        public bool IsDeleted { get; set; }
+        public bool IsMoving { get; set; }
+        public bool HasChildren { get; set; }
+        public int CourseId { get; set; }
+        public int ToWorkGroupId { get; set; }
+        public int FromWorkGroupId { get; set; }
+    }
 }

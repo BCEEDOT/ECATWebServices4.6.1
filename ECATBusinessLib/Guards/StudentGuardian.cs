@@ -24,18 +24,18 @@ namespace Ecat.Business.Guards
     public class StudentGuardian
     {
 
-        private readonly EFContextProvider<EcatContext> _efCtx;
-        private readonly Person _loggedInUser;
+        private readonly EFContextProvider<EcatContext> ctxManager;
+        private readonly Person loggedInUser;
         private readonly Type _tStudInGroup = typeof (CrseStudentInGroup);
         private readonly Type _tStudComment = typeof(StudSpComment);
         private readonly Type _tStudCommentFlag = typeof(StudSpCommentFlag);
         private readonly Type _tSpResponse = typeof(SpResponse);
         private readonly Type _tStratResponse = typeof(StratResponse);
 
-        public StudentGuardian(EFContextProvider<EcatContext> efCtx, Person loggedInUser)
+        public StudentGuardian(EFContextProvider<EcatContext> efCtx, Person loggedIn)
         {
-            _efCtx = efCtx;
-            _loggedInUser = loggedInUser;
+            ctxManager = efCtx;
+            loggedInUser = loggedIn;
         }
 
         public SaveMap BeforeSaveEntities(SaveMap saveMap)
@@ -56,9 +56,9 @@ namespace Ecat.Business.Guards
 
             if (courseMonitorEntities != null || workGroupMonitorEntities != null)
             {
-                var monitorGuard = new MonitoredGuard(_efCtx);
+                var monitorGuard = new MonitoredGuard(ctxManager);
                 if (courseMonitorEntities != null) monitorGuard.ProcessCourseMonitoredMaps(courseMonitorEntities);
-                if (workGroupMonitorEntities != null) monitorGuard.ProcessWorkGroupMonitoredMaps(workGroupMonitorEntities);
+                if (workGroupMonitorEntities != null) monitorGuard.ProcessStudentWorkGroupMonitoredMaps(workGroupMonitorEntities);
             }
 
             //Process studInGroup to ensure that only the logged student' is being handled.
@@ -66,7 +66,7 @@ namespace Ecat.Business.Guards
             {
                 var infos = (from info in saveMap[_tStudInGroup]
                     let sig = info.Entity as CrseStudentInGroup
-                    where sig != null && sig.StudentId == _loggedInUser.PersonId
+                    where sig != null && sig.StudentId == loggedInUser.PersonId
                     where info.EntityState == EntityState.Modified
                     where info.OriginalValuesMap.ContainsKey("HasAcknowledged")
                     select info).ToList();
@@ -99,8 +99,8 @@ namespace Ecat.Business.Guards
                 }
             }
 
-            saveMap.AuditMap(_loggedInUser.PersonId);
-            saveMap.SoftDeleteMap(_loggedInUser.PersonId);
+            saveMap.AuditMap(loggedInUser.PersonId);
+            //saveMap.SoftDeleteMap(loggedInUser.PersonId);
             return saveMap;
         }
     }
