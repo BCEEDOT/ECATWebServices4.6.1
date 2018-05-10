@@ -18,6 +18,7 @@ using Ecat.Business.Repositories.Interface;
 using Ecat.Data.Models.User;
 using Ecat.Data.Models.School;
 using Ecat.Data.Models.Common;
+using Ecat.Data.Models.Designer;
 using Ecat.Web.Utility;
 using Newtonsoft.Json.Linq;
 
@@ -100,15 +101,34 @@ namespace Ecat.Web.Controllers
             return await _lmsGroupOps.ReconcileGroupMembers(workGroupId);
         }
 
+        //[HttpGet]
+        //public async Task<List<GroupMemReconResult>> PollGroupCategory(int courseId, string category)
+        //{
+        //    return await _lmsGroupOps.ReconcileAllGroupMembers(courseId);
+        //    //return await _lmsGroupOps.ReconcileGroupMembers(courseId, category);
+        //}
+        //ECAT 2.0 only get BC1 groups from LMS
         [HttpGet]
-        public async Task<List<GroupMemReconResult>> PollGroupCategory(int courseId, string category)
+        public async Task<List<GroupMemReconResult>> PollGroupCategory(int courseId)
         {
-            return await _lmsGroupOps.ReconcileGroupMembers(courseId, category);
+            return await _lmsGroupOps.ReconcileAllGroupMembers(courseId);
         }
 
         [HttpGet]
         public async Task<SaveGradeResult> SyncBbGrades(int crseId, string wgCategory) {
             return await _lmsGroupOps.SyncBbGrades(crseId, wgCategory);
+        }
+
+        [HttpGet]
+        public async Task<List<WorkGroupModel>> GetCourseModels(int courseId)
+        {
+            return await _lmsCourseOps.GetCourseModels(courseId);
+        }
+
+        [HttpGet]
+        public async Task<List<WorkGroup>> GetAllGroupSetMembers(int courseId, string categoryId)
+        {
+            return await _lmsGroupOps.GetAllGroupSetMembers(courseId, categoryId);
         }
     }
 }
