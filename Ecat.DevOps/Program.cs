@@ -40,17 +40,21 @@ namespace Ecat.DevOps
                         Console.WriteLine($"Finished loading {count} static records into the database");
                         break;
                     case 2:
-                        DbOperations.LoadStudentsIntoGroups();
+                        var countMin = DbOperations.LoadStaticMinDbData();
+                        Console.WriteLine($"Finished loading {countMin} static records into the database");
                         break;
                     case 3:
-                        DbOperations.DoAssessments();
+                        DbOperations.LoadStudentsIntoGroups();
                         break;
                     case 4:
+                        DbOperations.DoAssessments();
                         break;
                     case 5:
-                        DbOperations.LoadIST();
                         break;
                     case 6:
+                        DbOperations.LoadIST();
+                        break;
+                    case 7:
                         DbOperations.ListBbCategoryId();
                         break;
                 }
@@ -64,15 +68,16 @@ namespace Ecat.DevOps
             Console.WriteLine("Developer Menu");
             Console.WriteLine("=======================");
             Console.WriteLine("1. Load Static Data (Must be an empty Db)");
-            Console.WriteLine("2. Load/Reload Group Members");
-            Console.WriteLine("3. Load/Reload Assess/Comments");
-            Console.WriteLine("4. Load/Reload Fac Assess/Comments");
-            Console.WriteLine("5. Load IST Members and Assessments");
-            Console.WriteLine("6. Get Bb Category Id");
-            Console.WriteLine("7. Load Ecat Academy");
-            Console.WriteLine("8. Get Bb Workgroup By Course Id");
+            Console.WriteLine("2. Load Static Min Data (Must be an empty Db)");
+            Console.WriteLine("3. Load/Reload Group Members");
+            Console.WriteLine("4. Load/Reload Assess/Comments");
+            Console.WriteLine("5. Load/Reload Fac Assess/Comments");
+            Console.WriteLine("6. Load IST Members and Assessments");
+            Console.WriteLine("7. Get Bb Category Id");
+            Console.WriteLine("8. Load Ecat Academy");
+            Console.WriteLine("9. Get Bb Workgroup By Course Id");
             //Console.WriteLine("9. Get Bb Students By Wg Id");
-            Console.WriteLine("9. Exit");
+            Console.WriteLine("10. Exit");
             var result = Console.ReadLine();
             return Convert.ToInt32(result);
         }
@@ -92,6 +97,18 @@ namespace Ecat.DevOps
         {
             var count = File.ReadAllLines("DbDevSeed.sql").Length;
             var seedFile = File.ReadAllText("DbDevSeed.sql");
+
+            using (var ctx = new EcatContext())
+            {
+                ctx.Database.ExecuteSqlCommand(seedFile);
+            }
+            return count;
+        }
+
+        public static int LoadStaticMinDbData()
+        {
+            var count = File.ReadAllLines("DbDevSeedmin.sql").Length;
+            var seedFile = File.ReadAllText("DbDevSeedmin.sql");
 
             using (var ctx = new EcatContext())
             {

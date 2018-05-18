@@ -76,6 +76,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="DbDevSeedmin.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="DbDevSeed.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
