@@ -66,7 +66,7 @@ namespace Ecat.Data.Contexts.Config
         {
             Ignore(p => p.WgModel);
             Ignore(p => p.FacSpComments);
-            Ignore(p => p.FacSpResponses);
+            //Ignore(p => p.FacSpResponses);
             Ignore(p => p.FacStratResponses);
             Ignore(p => p.BbGroupId);
             Ignore(p => p.CanPublish);
