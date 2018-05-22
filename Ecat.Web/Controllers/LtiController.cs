@@ -21,6 +21,7 @@ using LtiLibrary.Core.Lti1;
 using Microsoft.Owin.Security;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Configuration;
 
 namespace Ecat.Web.Controllers
 {
@@ -35,7 +36,7 @@ namespace Ecat.Web.Controllers
         }
      
         // GET: Lti
-        public async Task<ActionResult> Secure()
+        public async Task<ActionResult> LtiEntry()
         {
             var isLti = Request.IsAuthenticatedWithLti();
             if (!isLti)
@@ -85,8 +86,16 @@ namespace Ecat.Web.Controllers
             switch (person.MpInstituteRole)
             {
                 case MpInstituteRoleId.Faculty:
-                    person.Faculty = null;
+                    //person.Faculty = null;
                     identity.AddClaim(new Claim(ClaimTypes.Role, RoleMap.Faculty.ToString()));
+                    if (person.Faculty.IsCourseAdmin)
+                    {
+                        identity.AddClaim(new Claim(ClaimTypes.Role, MpInstituteRole.ISA));
+                    }
+                    else
+                    {
+                        identity.AddClaim(new Claim(ClaimTypes.Role, MpInstituteRole.notISA));
+                    }
                     break;
                 case MpInstituteRoleId.Student:
                     identity.AddClaim(new Claim(ClaimTypes.Role, RoleMap.Student.ToString()));
@@ -101,7 +110,9 @@ namespace Ecat.Web.Controllers
             ticket.Properties.IssuedUtc = DateTime.Now;
             ticket.Properties.ExpiresUtc = DateTime.Now.AddHours(24);
 
-            token.AuthToken = AuthServerOptions.OabOpts.AccessTokenFormat.Protect(ticket);
+            //token.AuthToken = AuthServerOptions.OabOpts.AccessTokenFormat.Protect(ticket);
+            var format = new CustomJwtFormat(ConfigurationManager.AppSettings["issuer"]);
+            token.AuthToken = format.Protect(ticket);
 
             ViewBag.User = JsonConvert.SerializeObject(token, Formatting.None,
                  new JsonSerializerSettings

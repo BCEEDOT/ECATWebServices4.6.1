@@ -302,6 +302,7 @@
     <None Include="Properties\PublishProfiles\barnescenter-assessment1 - Web Deploy %282%29.pubxml" />
     <None Include="Properties\PublishProfiles\barnescenter-assessment1 - Web Deploy.pubxml" />
     <Content Include="Views\Lti\Ping.cshtml" />
+    <Content Include="Views\Lti\LtiEntry.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
