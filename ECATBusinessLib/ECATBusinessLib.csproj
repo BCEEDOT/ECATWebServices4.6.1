@@ -31,12 +31,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Breeze.ContextProvider, Version=1.5.5.0, Culture=neutral, PublicKeyToken=f6085f1a45e2ac59, processorArchitecture=MSIL">
-      <HintPath>..\packages\Breeze.Server.ContextProvider.1.5.5\lib\Breeze.ContextProvider.dll</HintPath>
+    <Reference Include="Breeze.ContextProvider, Version=1.6.0.0, Culture=neutral, PublicKeyToken=f6085f1a45e2ac59, processorArchitecture=MSIL">
+      <HintPath>..\packages\Breeze.Server.ContextProvider.1.6.6\lib\Breeze.ContextProvider.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Breeze.ContextProvider.EF6, Version=1.5.5.0, Culture=neutral, PublicKeyToken=f6085f1a45e2ac59, processorArchitecture=MSIL">
-      <HintPath>..\packages\Breeze.Server.ContextProvider.EF6.1.5.5\lib\Breeze.ContextProvider.EF6.dll</HintPath>
+    <Reference Include="Breeze.ContextProvider.EF6, Version=1.6.0.0, Culture=neutral, PublicKeyToken=f6085f1a45e2ac59, processorArchitecture=MSIL">
+      <HintPath>..\packages\Breeze.Server.ContextProvider.EF6.1.6.6\lib\Breeze.ContextProvider.EF6.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Elmah, Version=1.2.14706.0, Culture=neutral, processorArchitecture=MSIL">

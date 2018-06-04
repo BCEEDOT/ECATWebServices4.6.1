@@ -39,11 +39,11 @@ namespace Ecat.Web.Controllers
         }
 
         //TODO: Remove for production
-        [HttpGet]
-        public IEnumerable<Person> GetUsers()
-        {
-            return _userRepo.GetUsers();
-        }
+        //[HttpGet]
+        //public IEnumerable<Person> GetUsers()
+        //{
+        //    return _userRepo.GetUsers();
+        //}
 
         [HttpPost]
         [AllowAnonymous]

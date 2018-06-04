@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8">
     <title>ECAT</title>
-    <base href="/">
+    <base href="/au/barnes/aa/ecat/development/">
+    <!-->base href="/ecat2/"-->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" href="favicon.png" sizes="32x32">
     <meta name="theme-color" content="#000000">
@@ -25,7 +26,7 @@
             var jsonToken = JSON.parse(usertoken);
             localStorage.setItem("ecatAccessToken", jsonToken.authToken);
             localStorage.setItem("ecatUserIdToken", JSON.stringify(jsonToken));
-            window.location = "ecat/index.html";
+            window.location = "app/index.html";
         }
 
         //localStorage.setItem("ecatError", errortoken);
