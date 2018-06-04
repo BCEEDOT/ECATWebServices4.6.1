@@ -81,16 +81,6 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Ecat.Shared.Core\Ecat.Shared.Core.csproj">
-      <Project>{d7f032f9-5296-4093-bb4a-ea9a924b08cf}</Project>
-      <Name>Ecat.Shared.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Ecat.Shared.DbMgr\Ecat.Shared.DbMgr.csproj">
-      <Project>{20b162d3-ac45-4e9a-a55b-498e45f6876e}</Project>
-      <Name>Ecat.Shared.DbMgr</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>

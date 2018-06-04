@@ -62,26 +62,22 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Ecat.LmsAdmin.Mod\Ecat.LmsAdmin.Mod.csproj">
-      <Project>{774c5ec1-feb0-443a-9377-c28680975665}</Project>
-      <Name>Ecat.LmsAdmin.Mod</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Ecat.Shared.Core\Ecat.Shared.Core.csproj">
-      <Project>{d7f032f9-5296-4093-bb4a-ea9a924b08cf}</Project>
-      <Name>Ecat.Shared.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Ecat.Shared.DbMgr\Ecat.Shared.DbMgr.csproj">
-      <Project>{20b162d3-ac45-4e9a-a55b-498e45f6876e}</Project>
-      <Name>Ecat.Shared.DbMgr</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="DbDevSeedmin.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="DbDevSeed.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ECATBusinessLib\ECATBusinessLib.csproj">
+      <Project>{bcd60e56-0185-4330-adcf-afcc78a134e2}</Project>
+      <Name>ECATBusinessLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ECATDataLib\ECATDataLib.csproj">
+      <Project>{f7127af7-2aa4-4967-9ec0-dadd706832ac}</Project>
+      <Name>ECATDataLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

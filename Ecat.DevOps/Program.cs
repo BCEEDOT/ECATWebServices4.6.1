@@ -10,17 +10,21 @@ using System.ServiceModel.Configuration;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Ecat.LmsAdmin.Mod;
-using Ecat.Shared.Core.Logic;
-using Ecat.Shared.Core.ModelLibrary.Learner;
-using Ecat.Shared.Core.ModelLibrary.School;
-using Ecat.Shared.Core.ModelLibrary.User;
-using Ecat.Shared.Core.Utility;
-using Ecat.Shared.DbMgr.BbWs.BbCourse;
-using Ecat.Shared.DbMgr.BbWs.BbCourseMem;
-using Ecat.Shared.DbMgr.BbWs.BbUsers;
-using Ecat.Shared.DbMgr.BbWs.BbContext;
-using Ecat.Shared.DbMgr.Context;
+using Ecat.Data.Contexts;
+using Ecat.Data.Models.Student;
+using Ecat.Data.Models.School;
+using Ecat.Data.Static;
+//using Ecat.LmsAdmin.Mod;
+//using Ecat.Shared.Core.Logic;
+//using Ecat.Shared.Core.ModelLibrary.Learner;
+//using Ecat.Shared.Core.ModelLibrary.School;
+//using Ecat.Shared.Core.ModelLibrary.User;
+//using Ecat.Shared.Core.Utility;
+//using Ecat.Shared.DbMgr.BbWs.BbCourse;
+//using Ecat.Shared.DbMgr.BbWs.BbCourseMem;
+//using Ecat.Shared.DbMgr.BbWs.BbUsers;
+//using Ecat.Shared.DbMgr.BbWs.BbContext;
+//using Ecat.Shared.DbMgr.Context;
 
 namespace Ecat.DevOps
 {
@@ -54,9 +58,9 @@ namespace Ecat.DevOps
                     case 6:
                         DbOperations.LoadIST();
                         break;
-                    case 7:
-                        DbOperations.ListBbCategoryId();
-                        break;
+                    //case 7:
+                        //DbOperations.ListBbCategoryId();
+                        //break;
                 }
             } while (userSelectOptions != 9);
         }
@@ -73,7 +77,7 @@ namespace Ecat.DevOps
             Console.WriteLine("4. Load/Reload Assess/Comments");
             Console.WriteLine("5. Load/Reload Fac Assess/Comments");
             Console.WriteLine("6. Load IST Members and Assessments");
-            Console.WriteLine("7. Get Bb Category Id");
+            //Console.WriteLine("7. Get Bb Category Id");
             Console.WriteLine("8. Load Ecat Academy");
             Console.WriteLine("9. Get Bb Workgroup By Course Id");
             //Console.WriteLine("9. Get Bb Students By Wg Id");
@@ -503,25 +507,25 @@ namespace Ecat.DevOps
             }
         }
 
-        public static async void ListBbCategoryId()
-        {
-            Console.WriteLine("Grabbing Bb Categories via web services");
+        //public static async void ListBbCategoryId()
+        //{
+        //    Console.WriteLine("Grabbing Bb Categories via web services");
 
-            var ctx = new EcatContext();
-            var bbWs = new BbWsCnet();
-            var adminMod = new CourseOps(ctx, bbWs);
+        //    var ctx = new EcatContext();
+        //    var bbWs = new BbWsCnet();
+        //    var adminMod = new CourseOps(ctx, bbWs);
 
-            var catList = await adminMod.GetBbCategories();
+        //    var catList = await adminMod.GetBbCategories();
 
-             Console.WriteLine("Success...here are the categories");
+        //     Console.WriteLine("Success...here are the categories");
 
-            foreach (var cat in catList)
-            {
-                Console.WriteLine($"-- {cat.id}: {cat.title} [Parent: {cat.parentId}]");
-            }
+        //    foreach (var cat in catList)
+        //    {
+        //        Console.WriteLine($"-- {cat.id}: {cat.title} [Parent: {cat.parentId}]");
+        //    }
             
 
-        }
+        //}
 
         public static void LoadIST()
         {
