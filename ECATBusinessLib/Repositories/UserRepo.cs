@@ -135,12 +135,14 @@ namespace Ecat.Business.Repositories
                 ctxManager.Context.People.Add(user);
             }
 
-            var userIsCourseAdmin = false;
+            //var userIsCourseAdmin = false;
 
-            switch (parsedRequest.Parameters["Roles"].ToLower())
+            var roles = parsedRequest.Parameters["Roles"].ToLower().Split(',');
+
+            switch (roles[0])
             {
                 case "instructor":
-                    userIsCourseAdmin = true;
+                    //userIsCourseAdmin = true;
                     user.MpInstituteRole = MpInstituteRoleId.Faculty;
                     break;
                 case "teachingassistant":
@@ -158,7 +160,7 @@ namespace Ecat.Business.Repositories
             {
                 case MpInstituteRoleId.Faculty:
                     user.Faculty = user.Faculty ?? new ProfileFaculty();
-                    user.Faculty.IsCourseAdmin = userIsCourseAdmin;
+                    //user.Faculty.IsCourseAdmin = userIsCourseAdmin;
                     user.Faculty.AcademyId = parsedRequest.Parameters["custom_ecat_school"];
                     break;
                 case MpInstituteRoleId.Designer:
