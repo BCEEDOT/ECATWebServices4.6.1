@@ -20,6 +20,7 @@ using Ecat.Data.Models.School;
 //using Ecat.Shared.Core.ModelLibrary.Staff.MeetingTaker;
 //using Ecat.Shared.Core.ModelLibrary.User;
 using Ecat.Data.Models.User;
+using Ecat.Data.Models.Canvas;
 
 namespace Ecat.Data.Contexts
 {
@@ -54,7 +55,8 @@ namespace Ecat.Data.Contexts
                 || type.Namespace == "Ecat.Data.Models.Faculty.Config"
                 || type.Namespace == "Ecat.Data.Models.School.Config"
                 || type.Namespace == "Ecat.Data.Models.Student.Config"
-                || type.Namespace == "Ecat.Data.Models.User.Config"));
+                || type.Namespace == "Ecat.Data.Models.User.Config"
+                || type.Namespace == "Ecat.Data.Models.Canvas.Config"));
 
             foreach (var configurationInstance in typesToRegister.Select(Activator.CreateInstance))
             {
@@ -117,6 +119,7 @@ namespace Ecat.Data.Contexts
         public DbSet<FacSpComment> FacSpComments { get; set; }
         public DbSet<FacSpCommentFlag> FacSpCommentFlags { get; set; }
         public DbSet<FacStratResponse> FacStratResponses { get; set; }
+        public DbSet<CanvasLogin> CanvasLogins { get; set; }
 
         #endregion
 

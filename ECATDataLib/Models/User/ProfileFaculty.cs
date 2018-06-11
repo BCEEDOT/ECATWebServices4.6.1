@@ -7,6 +7,7 @@ using Ecat.Data.Models.School;
 using TypeLite;
 //using Ecat.Shared.Core.Interface;
 using Ecat.Data.Models.Interface;
+using Ecat.Data.Models.Canvas;
 
 namespace Ecat.Data.Models.User
 {
@@ -21,5 +22,7 @@ namespace Ecat.Data.Models.User
         public bool IsReportViewer   { get; set; }
         public string AcademyId { get; set; }
         public ICollection<FacultyInCourse> Courses { get; set; }
+
+        public CanvasLogin CanvasLogin { get; set; }
     }
 }

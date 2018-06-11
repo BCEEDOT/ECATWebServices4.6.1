@@ -11,6 +11,7 @@ using Ecat.Data.Models.School;
 
 namespace Ecat.Data.Static
 {
+    //TODO: Update Canvas Ids
     public static class StaticAcademy
     {
 
@@ -59,7 +60,8 @@ namespace Ecat.Data.Static
              MpEdLevel = MpEdLevel.Sncoa,
              Base = AcademyBase.Gunter,
              BbCategoryId = MpAcadCat.AFSNCOA,
-             ParentBbCategoryId = MpAcadCat.BCEE
+             ParentBbCategoryId = MpAcadCat.BCEE,
+             CanvasAcctId = 1
          };
 
         public static Academy Ecat
@@ -71,7 +73,8 @@ namespace Ecat.Data.Static
            MpEdLevel = MpEdLevel.None,
            Base = AcademyBase.Gunter,
            BbCategoryId = MpAcadCat.ECAT,
-           ParentBbCategoryId = MpAcadCat.BCEE
+           ParentBbCategoryId = MpAcadCat.BCEE,
+           CanvasAcctId = 1
        };
 
         public static Academy Ecatncoa
@@ -83,7 +86,8 @@ namespace Ecat.Data.Static
            MpEdLevel = MpEdLevel.Ncoa,
            Base = AcademyBase.Gunter,
            BbCategoryId = MpAcadCat.ECATILE,
-           ParentBbCategoryId = MpAcadCat.NCOA
+           ParentBbCategoryId = MpAcadCat.NCOA,
+           CanvasAcctId = 1
        };
 
         public static Academy Ecatsncoa
@@ -95,7 +99,8 @@ namespace Ecat.Data.Static
            MpEdLevel = MpEdLevel.Sncoa,
            Base = AcademyBase.Gunter,
            BbCategoryId = MpAcadCat.ECATALE,
-           ParentBbCategoryId = MpAcadCat.BCEE
+           ParentBbCategoryId = MpAcadCat.BCEE,
+           CanvasAcctId = 1
        };
 
         public static Academy Keesler
@@ -107,7 +112,8 @@ namespace Ecat.Data.Static
             MpEdLevel = MpEdLevel.Ncoa,
             Base = AcademyBase.Gunter,
             BbCategoryId = MpAcadCat.Keesler,
-            ParentBbCategoryId = MpAcadCat.NCOA
+            ParentBbCategoryId = MpAcadCat.NCOA,
+            CanvasAcctId = 1
         };
 
         public static Academy Peterson
@@ -119,7 +125,8 @@ namespace Ecat.Data.Static
             MpEdLevel = MpEdLevel.Ncoa,
             Base = AcademyBase.Peterson,
             BbCategoryId = MpAcadCat.Peterson,
-            ParentBbCategoryId = MpAcadCat.NCOA
+            ParentBbCategoryId = MpAcadCat.NCOA,
+            CanvasAcctId = 1
         };
 
         public static Academy Kapaun
@@ -131,7 +138,8 @@ namespace Ecat.Data.Static
             MpEdLevel = MpEdLevel.Ncoa,
             Base = AcademyBase.Kapaun,
             BbCategoryId = MpAcadCat.Kapaun,
-            ParentBbCategoryId = MpAcadCat.NCOA
+            ParentBbCategoryId = MpAcadCat.NCOA,
+            CanvasAcctId = 1
         };
 
         public static Academy Kadena
@@ -143,7 +151,8 @@ namespace Ecat.Data.Static
             MpEdLevel = MpEdLevel.Ncoa,
             Base = AcademyBase.Kadena,
             BbCategoryId = MpAcadCat.Kadena,
-            ParentBbCategoryId = MpAcadCat.NCOA
+            ParentBbCategoryId = MpAcadCat.NCOA,
+            CanvasAcctId = 1
         };
 
         public static Academy Hickam
@@ -155,7 +164,8 @@ namespace Ecat.Data.Static
             MpEdLevel = MpEdLevel.Ncoa,
             Base = AcademyBase.Hickam,
             BbCategoryId = MpAcadCat.Hickam,
-            ParentBbCategoryId = MpAcadCat.NCOA
+            ParentBbCategoryId = MpAcadCat.NCOA,
+            CanvasAcctId = 1
         };
 
         public static Academy Elmendorf
@@ -167,7 +177,8 @@ namespace Ecat.Data.Static
             MpEdLevel = MpEdLevel.Ncoa,
             Base = AcademyBase.Elmendorf,
             BbCategoryId = MpAcadCat.Elmendorf,
-            ParentBbCategoryId = MpAcadCat.NCOA
+            ParentBbCategoryId = MpAcadCat.NCOA,
+            CanvasAcctId = 1
         };
 
         public static Academy McGheeTyson
@@ -179,7 +190,8 @@ namespace Ecat.Data.Static
             MpEdLevel = MpEdLevel.Ncoa,
             Base = AcademyBase.McGheeTyson,
             BbCategoryId = MpAcadCat.McGheeTyson,
-            ParentBbCategoryId = MpAcadCat.NCOA
+            ParentBbCategoryId = MpAcadCat.NCOA,
+            CanvasAcctId = 1
         };
 
         public static Academy Sheppard
@@ -191,7 +203,8 @@ namespace Ecat.Data.Static
             MpEdLevel = MpEdLevel.Ncoa,
             Base = AcademyBase.Sheppard,
             BbCategoryId = MpAcadCat.Sheppard,
-            ParentBbCategoryId = MpAcadCat.NCOA
+            ParentBbCategoryId = MpAcadCat.NCOA,
+            CanvasAcctId = 1
         };
 
         public static Academy Tyndall
@@ -203,7 +216,8 @@ namespace Ecat.Data.Static
             MpEdLevel = MpEdLevel.Ncoa,
             Base = AcademyBase.Tyndall,
             BbCategoryId = MpAcadCat.Tyndall,
-            ParentBbCategoryId = MpAcadCat.NCOA
+            ParentBbCategoryId = MpAcadCat.NCOA,
+            CanvasAcctId = 1
         };
 
         public static Academy Lackland
@@ -215,7 +229,8 @@ namespace Ecat.Data.Static
             MpEdLevel = MpEdLevel.Ncoa,
             Base = AcademyBase.Lackland,
             BbCategoryId = MpAcadCat.Lackland,
-            ParentBbCategoryId = MpAcadCat.NCOA
+            ParentBbCategoryId = MpAcadCat.NCOA,
+            CanvasAcctId = 1
         };
     }
 }

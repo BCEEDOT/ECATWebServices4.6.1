@@ -74,6 +74,20 @@
     <Compile Include="Migrations\201806061529403_ECAT2_InitDB.Designer.cs">
       <DependentUpon>201806061529403_ECAT2_InitDB.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201806071301089_CanvasLogins.cs" />
+    <Compile Include="Migrations\201806071301089_CanvasLogins.Designer.cs">
+      <DependentUpon>201806071301089_CanvasLogins.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Canvas\Config\Login.cs" />
+    <Compile Include="Models\Canvas\Course.cs" />
+    <Compile Include="Models\Canvas\Enrollment.cs" />
+    <Compile Include="Models\Canvas\Group.cs" />
+    <Compile Include="Models\Canvas\GroupMembership.cs" />
+    <Compile Include="Models\Canvas\Login.cs" />
+    <Compile Include="Models\Canvas\Progress.cs" />
+    <Compile Include="Models\Canvas\Section.cs" />
+    <Compile Include="Models\Canvas\User.cs" />
+    <Compile Include="Models\Canvas\Assignment.cs" />
     <Compile Include="Models\Cognitive\CogEcmspeResult.cs" />
     <Compile Include="Models\Cognitive\CogECPEResult.cs" />
     <Compile Include="Models\Cognitive\CogESALBResult.cs" />
@@ -167,6 +181,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201806061529403_ECAT2_InitDB.resx">
       <DependentUpon>201806061529403_ECAT2_InitDB.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806071301089_CanvasLogins.resx">
+      <DependentUpon>201806071301089_CanvasLogins.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
