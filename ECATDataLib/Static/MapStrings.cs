@@ -128,6 +128,21 @@
                     return MpInstituteRoleId.Undefined;
             }
         }
+
+        public static string CanvasRoleToEcat(string type)
+        {
+            switch (type)
+            {
+                case "TeacherEnrollment":
+                case "TaEnrollment":
+                case "DesignerEnrollment":
+                    return MpInstituteRoleId.Faculty;
+                case "StudentEnrollment":
+                    return MpInstituteRoleId.Student;
+                default:
+                    return MpInstituteRoleId.Undefined;
+            }
+        }
     }
 
     public static class MpGroupCategory

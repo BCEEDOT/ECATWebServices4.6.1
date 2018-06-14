@@ -176,7 +176,13 @@ namespace Ecat.Business.Repositories
             user.Email = parsedRequest.LisPersonEmailPrimary.ToLower();
             user.LastName = parsedRequest.LisPersonNameFamily;
             user.FirstName = parsedRequest.LisPersonNameGiven;
-            user.BbUserId = parsedRequest.UserId;
+
+            if (parsedRequest.ToolConsumerInfoProductFamilyCode == "canvas") {
+                user.BbUserId = parsedRequest.Parameters["custom_canvas_user_id"];
+            } else {
+                user.BbUserId = parsedRequest.UserId;
+            }
+
             user.ModifiedDate = DateTime.Now;
 
             if (await ctxManager.Context.SaveChangesAsync() > 0)
