@@ -281,6 +281,7 @@
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\FacultyController.cs" />
     <Compile Include="Controllers\LmsAdminController.cs" />
+    <Compile Include="Controllers\CanvasAuthController.cs" />
     <Compile Include="Controllers\LtiController.cs" />
     <Compile Include="Controllers\StaffController.cs" />
     <Compile Include="Controllers\StudentController.cs" />
@@ -304,6 +305,7 @@
     <None Include="Properties\PublishProfiles\barnescenter-assessment1 - Web Deploy.pubxml" />
     <Content Include="Views\Lti\Ping.cshtml" />
     <Content Include="Views\Lti\LtiEntry.cshtml" />
+    <Content Include="Views\CanvasAuth\TokenRequest.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -311,9 +313,7 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Views\Dev\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

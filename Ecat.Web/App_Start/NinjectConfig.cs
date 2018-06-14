@@ -55,6 +55,7 @@ namespace Ecat.Web
             kernel.Bind<IStudRepo>().To<StudRepo>().InRequestScope();
             kernel.Bind<ILmsAdminCourseOps>().To<CourseOps>().InRequestScope();
             kernel.Bind<ILmsAdminGroupOps>().To<GroupOps>().InRequestScope();
+            kernel.Bind<ILmsAdminTokenRepo>().To<TokenOps>().InRequestScope();
             //kernel.Bind<EFContextProvider<UserCtx>>().ToSelf().InRequestScope();
             //kernel.Bind<EFContextProvider<StudCtx>>().ToSelf().InRequestScope();
             //kernel.Bind<EFContextProvider<FacCtx>>().ToSelf().InRequestScope();

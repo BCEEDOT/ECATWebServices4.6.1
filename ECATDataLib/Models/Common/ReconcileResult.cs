@@ -17,6 +17,7 @@ namespace Ecat.Data.Models.Common
         public string AcademyId { get; set; }
         public int NumAdded { get; set; }
         public int NumRemoved { get; set; }
+        public bool HasToken { get; set; }
     }
 
     [TsClass(Module = "ecat.entity.s.lmsAdmin")]

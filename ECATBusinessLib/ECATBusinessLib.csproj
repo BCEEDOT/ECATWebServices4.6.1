@@ -91,6 +91,7 @@
     <Compile Include="Repositories\Interface\ILmsAdminRepo.cs" />
     <Compile Include="Repositories\Interface\IStudRepo.cs" />
     <Compile Include="Repositories\Interface\IUserRepo.cs" />
+    <Compile Include="Repositories\LmsAdminTokenRepo.cs" />
     <Compile Include="Repositories\StudRepo.cs" />
     <Compile Include="Repositories\UserRepo.cs" />
     <Compile Include="Service References\BbWs.BbContext\Reference.cs">

@@ -26,6 +26,9 @@ namespace Ecat.Business.Repositories.Interface
         SaveResult SaveClientChanges(JObject saveBundle);
 
         Task<List<WorkGroupModel>> GetCourseModels(int courseId);
+
+        Task<CourseReconResult> ReconcileCanvasCourses();
+        Task<MemReconResult> ReconcileCanvasCourseMems(int courseId);
     }
 
     public interface ILmsAdminGroupOps
@@ -40,5 +43,14 @@ namespace Ecat.Business.Repositories.Interface
         Task<SaveGradeResult> SyncBbGrades(int crseId, string wgCategory);
 
         Task<List<WorkGroup>> GetAllGroupSetMembers(int courseId, string categoryId);
+    }
+
+    public interface ILmsAdminTokenRepo
+    {
+        int loggedInUserId { get; set; }
+
+        Task<bool> CheckCanvasTokenInfo();
+        Task<bool> GetRefreshToken(string authCode);
+        Task<string> GetAccessToken();
     }
 }
