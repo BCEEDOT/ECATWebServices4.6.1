@@ -12,22 +12,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Breeze.ContextProvider;
 using Breeze.ContextProvider.EF6;
-//using Ecat.Shared.Core.Logic;
-//using Ecat.Shared.Core.ModelLibrary.School;
 using Ecat.Data.Models.School;
-//using Ecat.Shared.Core.ModelLibrary.User;
 using Ecat.Data.Models.User;
-//using Ecat.Shared.Core.Utility;
 using Ecat.Business.Utilities;
-//using Ecat.Shared.DbMgr.BbWs.BbCourse;
 using Ecat.Business.BbWs.BbCourse;
-//using Ecat.Shared.DbMgr.BbWs.BbCourseMem;
 using Ecat.Business.BbWs.BbCourseMembership;
-//using Ecat.Shared.DbMgr.BbWs.BbUsers;
 using Ecat.Business.BbWs.BbUser;
-//using Ecat.Shared.DbMgr.Context;
 using Ecat.Data.Contexts;
-//using Ecat.Shared.Core.ModelLibrary.Common;
 using Ecat.Data.Models.Common;
 using Ecat.Data.Models.Designer;
 using Ecat.Data.Models.Canvas;
@@ -42,7 +33,9 @@ namespace Ecat.Business.Repositories
     public class CourseOps : ILmsAdminCourseOps
     {
         private readonly EFContextProvider<EcatContext> ctxManager;
+
         private readonly BbWsCnet _bbWs;
+
         //TODO: Update once we have production Canvas
         private readonly string canvasApiUrl = "https://lms.stag.af.edu/api/v1/";
 
@@ -86,8 +79,7 @@ namespace Ecat.Business.Repositories
                 .SingleAsync();
 
             var edLevel = StaticAcademy.AcadLookupById
-                .Where(acad => acad.Key == course.AcademyId)
-                .Single()
+                .Single(acad => acad.Key == course.AcademyId)
                 .Value
                 .MpEdLevel;
 
@@ -104,7 +96,7 @@ namespace Ecat.Business.Repositories
         {
             var filter = new CategoryFilter
             {
-                filterType = (int)CategoryFilterTpe.GetAllCourseCategory,
+                filterType = (int) CategoryFilterTpe.GetAllCourseCategory,
                 filterTypeSpecified = true
             };
             var autoRetry = new Retrier<CategoryVO[]>();
@@ -120,13 +112,13 @@ namespace Ecat.Business.Repositories
             var courseFilter = new CourseFilter
             {
                 filterTypeSpecified = true,
-                filterType = (int)CourseFilterType.LoadByCatId
+                filterType = (int) CourseFilterType.LoadByCatId
             };
 
             if (Faculty != null)
             {
                 var academy = StaticAcademy.AcadLookupById[Faculty.AcademyId];
-                courseFilter.categoryIds = new[] { academy.BbCategoryId };
+                courseFilter.categoryIds = new[] {academy.BbCategoryId};
             }
             else
             {
@@ -195,7 +187,8 @@ namespace Ecat.Business.Repositories
 
             var reconResult = new CourseReconResult();
 
-            var canvasLogin = await ctxManager.Context.CanvasLogins.Where(cl => cl.PersonId == Faculty.PersonId).SingleOrDefaultAsync();
+            var canvasLogin = await ctxManager.Context.CanvasLogins.Where(cl => cl.PersonId == Faculty.PersonId)
+                .SingleOrDefaultAsync();
 
             if (canvasLogin.AccessToken == null)
             {
@@ -222,7 +215,8 @@ namespace Ecat.Business.Repositories
                 }
                 else
                 {
-                    var existingCourses = await ctxManager.Context.Courses.Where(c => c.AcademyId == academy.Id).ToListAsync();
+                    var existingCourses =
+                        await ctxManager.Context.Courses.Where(c => c.AcademyId == academy.Id).ToListAsync();
                     var existingIds = new List<string>();
                     //Bb course id is a string, Canvas course ids are numbers
                     existingCourses.ForEach(c => existingIds.Add(c.BbCourseId));
@@ -279,27 +273,27 @@ namespace Ecat.Business.Repositories
         public async Task<Course> GetAllCourseMembers(int courseId)
         {
             var query = await ctxManager.Context.Courses
-                 .Where(c => c.Id == courseId)
-                 .Select(c => new
-                 {
-                     c,
-                     Students = c.Students
-                     .Where(sic => !sic.IsDeleted)
-                     .Select(sic => new
-                     {
-                         sic,
-                         sic.Student,
-                         sic.Student.Person
-                     }),
-                     Faculty = c.Faculty.Where(fic => !fic.IsDeleted)
-                     .Select(fic => new
-                     {
-                         fic,
-                         fic.FacultyProfile,
-                         fic.FacultyProfile.Person
-                     })
-                 })
-                 .SingleAsync();
+                .Where(c => c.Id == courseId)
+                .Select(c => new
+                {
+                    c,
+                    Students = c.Students
+                        .Where(sic => !sic.IsDeleted)
+                        .Select(sic => new
+                        {
+                            sic,
+                            sic.Student,
+                            sic.Student.Person
+                        }),
+                    Faculty = c.Faculty.Where(fic => !fic.IsDeleted)
+                        .Select(fic => new
+                        {
+                            fic,
+                            fic.FacultyProfile,
+                            fic.FacultyProfile.Person
+                        })
+                })
+                .SingleAsync();
 
             return query.c;
         }
@@ -318,8 +312,8 @@ namespace Ecat.Business.Repositories
                         PersonId = fac.FacultyPersonId,
                         BbUserId = fac.FacultyProfile.Person.BbUserId,
                         CanDelete = !fac.FacSpComments.Any() &&
-                        !fac.FacSpResponses.Any() &&
-                        !fac.FacStratResponse.Any()
+                                    !fac.FacSpResponses.Any() &&
+                                    !fac.FacStratResponse.Any()
                     }).ToList(),
                     StudentsToReconcile = crse.Students.Select(sic => new UserReconcile
                     {
@@ -343,10 +337,11 @@ namespace Ecat.Business.Repositories
             var courseMemFilter = new MembershipFilter
             {
                 filterTypeSpecified = true,
-                filterType = (int)CrseMembershipFilterType.LoadByCourseId,
+                filterType = (int) CrseMembershipFilterType.LoadByCourseId,
             };
 
-            var bbCourseMems = await autoRetryCm.Try(() => _bbWs.BbCourseMembership(ecatCourse.Course.BbCourseId, courseMemFilter), 3);
+            var bbCourseMems =
+                await autoRetryCm.Try(() => _bbWs.BbCourseMembership(ecatCourse.Course.BbCourseId, courseMemFilter), 3);
 
             var existingCrseUserIds = ecatCourse.FacultyToReconcile
                 .Select(fac => fac.BbUserId).ToList();
@@ -367,7 +362,8 @@ namespace Ecat.Business.Repositories
                 reconResult.NumAdded = newMembers.Count();
             }
 
-            var usersBbIdsToRemove = existingCrseUserIds.Where(ecu => !bbCourseMems.Select(cm => cm.userId).Contains(ecu)).ToList();
+            var usersBbIdsToRemove = existingCrseUserIds
+                .Where(ecu => !bbCourseMems.Select(cm => cm.userId).Contains(ecu)).ToList();
 
             if (usersBbIdsToRemove.Any())
             {
@@ -393,7 +389,8 @@ namespace Ecat.Business.Repositories
             reconResult.NumAdded = 0;
             reconResult.NumOfAccountCreated = 0;
 
-            var canvasLogin = await ctxManager.Context.CanvasLogins.Where(cl => cl.PersonId == Faculty.PersonId).SingleOrDefaultAsync();
+            var canvasLogin = await ctxManager.Context.CanvasLogins.Where(cl => cl.PersonId == Faculty.PersonId)
+                .SingleOrDefaultAsync();
 
             if (canvasLogin.AccessToken == null)
             {
@@ -402,7 +399,8 @@ namespace Ecat.Business.Repositories
             }
 
             var client = new HttpClient();
-            var apiAddr = new Uri(canvasApiUrl + "courses/" + course.BbCourseId + "/enrollments?include[]=observed_users&per_page=1000");
+            var apiAddr = new Uri(canvasApiUrl + "courses/" + course.BbCourseId +
+                                  "/enrollments?include[]=observed_users&per_page=1000");
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Add("Authorization", "Bearer " + canvasLogin.AccessToken);
 
@@ -411,7 +409,8 @@ namespace Ecat.Business.Repositories
             var apiResponse = await response.Content.ReadAsStringAsync();
             if (response.IsSuccessStatusCode)
             {
-                var enrollmentsReturned = Newtonsoft.Json.JsonConvert.DeserializeObject<List<CanvasEnrollment>>(apiResponse);
+                var enrollmentsReturned =
+                    Newtonsoft.Json.JsonConvert.DeserializeObject<List<CanvasEnrollment>>(apiResponse);
 
                 if (enrollmentsReturned == null || enrollmentsReturned.Count == 0)
                 {
@@ -432,7 +431,8 @@ namespace Ecat.Business.Repositories
                         if (MpRoleTransform.CanvasRoleToEcat(ce.type) == MpInstituteRoleId.Student)
                         {
                             retStuUserIds.Add(ce.user_id.ToString());
-                            var stuEnrollExists = course.Students.Where(sic => sic.BbCourseMemId == ce.id.ToString()).Single();
+                            var stuEnrollExists = course.Students.Where(sic => sic.BbCourseMemId == ce.id.ToString())
+                                .Single();
 
                             //TODO: Will students disenrolled in iGecko/SIS show as inactive or be removed from the course in Canvas completely? Update accordingly
                             if (ce.enrollment_state == "inactive")
@@ -455,7 +455,8 @@ namespace Ecat.Business.Repositories
                                 if (stuEnrollExists != null && stuEnrollExists.IsDeleted)
                                 {
                                     stuEnrollExists.IsDeleted = false;
-                                    ctxManager.Context.Entry(stuEnrollExists).State = System.Data.Entity.EntityState.Modified;
+                                    ctxManager.Context.Entry(stuEnrollExists).State =
+                                        System.Data.Entity.EntityState.Modified;
                                     reconResult.NumAdded++;
                                 }
                             }
@@ -464,7 +465,8 @@ namespace Ecat.Business.Repositories
                         if (MpRoleTransform.CanvasRoleToEcat(ce.type) == MpInstituteRoleId.Faculty)
                         {
                             retFacUserIds.Add(ce.user_id.ToString());
-                            var facEnrollExists = course.Faculty.Where(fic => fic.BbCourseMemId == ce.id.ToString()).Single();
+                            var facEnrollExists = course.Faculty.Where(fic => fic.BbCourseMemId == ce.id.ToString())
+                                .Single();
 
                             //TODO: Will faculty disenrolled in iGecko/SIS show as inactive or be removed from the course in Canvas completely? Update accordingly
                             if (ce.enrollment_state == "inactive")
@@ -487,7 +489,8 @@ namespace Ecat.Business.Repositories
                                 if (facEnrollExists != null && facEnrollExists.IsDeleted)
                                 {
                                     facEnrollExists.IsDeleted = false;
-                                    ctxManager.Context.Entry(facEnrollExists).State = System.Data.Entity.EntityState.Modified;
+                                    ctxManager.Context.Entry(facEnrollExists).State =
+                                        System.Data.Entity.EntityState.Modified;
                                     reconResult.NumAdded++;
                                 }
                             }
@@ -499,12 +502,14 @@ namespace Ecat.Business.Repositories
 
                     if (retStuUserIds.Any())
                     {
-                        students = await ctxManager.Context.People.Where(p => retStuUserIds.Contains(p.BbUserId)).Include(p => p.Student).ToListAsync();
+                        students = await ctxManager.Context.People.Where(p => retStuUserIds.Contains(p.BbUserId))
+                            .Include(p => p.Student).ToListAsync();
                     }
 
                     if (retFacUserIds.Any())
                     {
-                        faculty = await ctxManager.Context.People.Where(p => retFacUserIds.Contains(p.BbUserId)).Include(p => p.Faculty).ToListAsync();
+                        faculty = await ctxManager.Context.People.Where(p => retFacUserIds.Contains(p.BbUserId))
+                            .Include(p => p.Faculty).ToListAsync();
                     }
 
                     if (newEnrolls.Any())
@@ -555,6 +560,7 @@ namespace Ecat.Business.Repositories
                                 {
                                     ecatAcct.Student = new ProfileStudent();
                                 }
+
                                 students.Add(ecatAcct);
 
                                 var newEnroll = new StudentInCourse();
@@ -565,12 +571,14 @@ namespace Ecat.Business.Repositories
                                 newStuEnrolls.Add(newEnroll);
                             }
 
-                            if (ecatAcct.MpInstituteRole == MpInstituteRoleId.Faculty || ecatAcct.MpInstituteRole == MpInstituteRoleId.CourseAdmin)
+                            if (ecatAcct.MpInstituteRole == MpInstituteRoleId.Faculty ||
+                                ecatAcct.MpInstituteRole == MpInstituteRoleId.CourseAdmin)
                             {
                                 if (ecatAcct.Faculty == null)
                                 {
                                     ecatAcct.Faculty = new ProfileFaculty();
                                 }
+
                                 ecatAcct.Faculty.AcademyId = course.AcademyId;
                                 faculty.Add(ecatAcct);
 
@@ -628,7 +636,8 @@ namespace Ecat.Business.Repositories
                     int numRemoved = 0;
                     if (removedFaculty.Any())
                     {
-                        removedFaculty.ForEach(fic => {
+                        removedFaculty.ForEach(fic =>
+                        {
                             fic.IsDeleted = true;
                             ctxManager.Context.Entry(fic).State = System.Data.Entity.EntityState.Modified;
                             numRemoved++;
@@ -637,7 +646,8 @@ namespace Ecat.Business.Repositories
 
                     if (removedStudents.Any())
                     {
-                        removedStudents.ForEach(sic => {
+                        removedStudents.ForEach(sic =>
+                        {
                             sic.IsDeleted = true;
                             ctxManager.Context.Entry(sic).State = System.Data.Entity.EntityState.Modified;
                             numRemoved++;
@@ -645,7 +655,8 @@ namespace Ecat.Business.Repositories
 
                         //need to delete studentingroup records so we don't mess up the group management screens
                         var studIdList = removedStudents.Select(sic => sic.StudentPersonId).ToList();
-                        var csigList = await ctxManager.Context.StudentInGroups.Where(csig => studIdList.Contains(csig.StudentId) && csig.CourseId == course.Id && !csig.IsDeleted)
+                        var csigList = await ctxManager.Context.StudentInGroups.Where(csig =>
+                                studIdList.Contains(csig.StudentId) && csig.CourseId == course.Id && !csig.IsDeleted)
                             .Include(csig => csig.WorkGroup)
                             .Include(csig => csig.AssesseeSpResponses)
                             .Include(csig => csig.AssesseeStratResponse)
@@ -659,14 +670,21 @@ namespace Ecat.Business.Repositories
                             .ToListAsync();
                         var groupIdList = csigList.Select(csig => csig.WorkGroupId).Distinct().ToList();
                         //var commFlags = await ctxManager.Context.StudSpCommentFlag.Where(flag => groupIdList.Contains(flag.WorkGroupId) && (studIdList.Contains(flag.AuthorPersonId) || studIdList.Contains(flag.RecipientPersonId))).ToListAsync();
-                        var authorFlags = await ctxManager.Context.StudSpCommentFlags.Where(flag => groupIdList.Contains(flag.WorkGroupId) && studIdList.Contains(flag.AuthorPersonId)).ToListAsync();
-                        var recipFlags = await ctxManager.Context.StudSpCommentFlags.Where(flag => groupIdList.Contains(flag.WorkGroupId) && studIdList.Contains(flag.RecipientPersonId)).ToListAsync();
-                        var facFlags = await ctxManager.Context.FacSpCommentFlags.Where(flag => groupIdList.Contains(flag.WorkGroupId) && studIdList.Contains(flag.RecipientPersonId)).ToListAsync();
+                        var authorFlags = await ctxManager.Context.StudSpCommentFlags.Where(flag =>
+                                groupIdList.Contains(flag.WorkGroupId) && studIdList.Contains(flag.AuthorPersonId))
+                            .ToListAsync();
+                        var recipFlags = await ctxManager.Context.StudSpCommentFlags.Where(flag =>
+                                groupIdList.Contains(flag.WorkGroupId) && studIdList.Contains(flag.RecipientPersonId))
+                            .ToListAsync();
+                        var facFlags = await ctxManager.Context.FacSpCommentFlags.Where(flag =>
+                                groupIdList.Contains(flag.WorkGroupId) && studIdList.Contains(flag.RecipientPersonId))
+                            .ToListAsync();
 
                         //if (commFlags.Any()) { ctxManager.Context.StudSpCommentFlag.RemoveRange(commFlags); }
                         //if (facFlags.Any()) { ctxManager.Context.facSpCommentsFlag.RemoveRange(facFlags); }
 
-                        studIdList.ForEach(id => {
+                        studIdList.ForEach(id =>
+                        {
                             var groupMems = csigList.Where(gm => gm.StudentId == id).ToList();
                             if (groupMems.Any())
                             {
@@ -674,33 +692,62 @@ namespace Ecat.Business.Repositories
                                 {
                                     if (gm.WorkGroup.MpSpStatus != MpSpStatus.Published)
                                     {
-                                        if (gm.AssesseeSpResponses.Any()) { ctxManager.Context.SpResponses.RemoveRange(gm.AssesseeSpResponses); }
-                                        if (gm.AssesseeStratResponse.Any()) { ctxManager.Context.SpStratResponses.RemoveRange(gm.AssesseeStratResponse); }
-                                        if (gm.AssessorSpResponses.Any()) { ctxManager.Context.SpResponses.RemoveRange(gm.AssessorSpResponses); }
-                                        if (gm.AssessorStratResponse.Any()) { ctxManager.Context.SpStratResponses.RemoveRange(gm.AssessorStratResponse); }
+                                        if (gm.AssesseeSpResponses.Any())
+                                        {
+                                            ctxManager.Context.SpResponses.RemoveRange(gm.AssesseeSpResponses);
+                                        }
+
+                                        if (gm.AssesseeStratResponse.Any())
+                                        {
+                                            ctxManager.Context.SpStratResponses.RemoveRange(gm.AssesseeStratResponse);
+                                        }
+
+                                        if (gm.AssessorSpResponses.Any())
+                                        {
+                                            ctxManager.Context.SpResponses.RemoveRange(gm.AssessorSpResponses);
+                                        }
+
+                                        if (gm.AssessorStratResponse.Any())
+                                        {
+                                            ctxManager.Context.SpStratResponses.RemoveRange(gm.AssessorStratResponse);
+                                        }
 
                                         if (gm.AuthorOfComments.Any())
                                         {
-                                            var gmAuthorFlags = authorFlags.Where(flag => flag.AuthorPersonId == gm.StudentId && flag.WorkGroupId == gm.WorkGroupId).ToList();
+                                            var gmAuthorFlags = authorFlags.Where(flag =>
+                                                flag.AuthorPersonId == gm.StudentId &&
+                                                flag.WorkGroupId == gm.WorkGroupId).ToList();
                                             ctxManager.Context.StudSpCommentFlags.RemoveRange(gmAuthorFlags);
                                             ctxManager.Context.StudSpComments.RemoveRange(gm.AuthorOfComments);
                                         }
+
                                         if (gm.RecipientOfComments.Any())
                                         {
-                                            var gmRecipFlags = recipFlags.Where(flag => flag.RecipientPersonId == gm.StudentId && flag.WorkGroupId == gm.WorkGroupId).ToList();
+                                            var gmRecipFlags = recipFlags.Where(flag =>
+                                                flag.RecipientPersonId == gm.StudentId &&
+                                                flag.WorkGroupId == gm.WorkGroupId).ToList();
                                             ctxManager.Context.StudSpCommentFlags.RemoveRange(gmRecipFlags);
                                             ctxManager.Context.StudSpComments.RemoveRange(gm.RecipientOfComments);
                                         }
 
                                         if (gm.FacultyComment != null)
                                         {
-                                            var gmFacFlag = facFlags.Where(flag => flag.RecipientPersonId == gm.StudentId && flag.WorkGroupId == gm.WorkGroupId).Single();
+                                            var gmFacFlag = facFlags.Where(flag =>
+                                                flag.RecipientPersonId == gm.StudentId &&
+                                                flag.WorkGroupId == gm.WorkGroupId).Single();
                                             ctxManager.Context.FacSpCommentFlags.Remove(gmFacFlag);
                                             ctxManager.Context.FacSpComments.Remove(gm.FacultyComment);
                                         }
 
-                                        if (gm.FacultySpResponses.Any()) { ctxManager.Context.FacSpResponses.RemoveRange(gm.FacultySpResponses); }
-                                        if (gm.FacultyStrat != null) { ctxManager.Context.FacStratResponses.Remove(gm.FacultyStrat); }
+                                        if (gm.FacultySpResponses.Any())
+                                        {
+                                            ctxManager.Context.FacSpResponses.RemoveRange(gm.FacultySpResponses);
+                                        }
+
+                                        if (gm.FacultyStrat != null)
+                                        {
+                                            ctxManager.Context.FacStratResponses.Remove(gm.FacultyStrat);
+                                        }
 
 
                                         ctxManager.Context.StudentInGroups.Remove(gm);
@@ -724,7 +771,8 @@ namespace Ecat.Business.Repositories
             return reconResult;
         }
 
-        private async Task<MemReconResult> AddNewUsers(IEnumerable<CourseMembershipVO> bbCmsVo, MemReconResult reconResult)
+        private async Task<MemReconResult> AddNewUsers(IEnumerable<CourseMembershipVO> bbCmsVo,
+            MemReconResult reconResult)
         {
             var bbCms = bbCmsVo.ToList();
             var bbCmUserIds = bbCms.Select(bbcm => bbcm.userId).ToList();
@@ -739,14 +787,15 @@ namespace Ecat.Business.Repositories
                 })
                 .ToListAsync();
 
-            var accountsNeedToCreate = bbCms.Where(cm => !usersWithAccount.Select(uwa => uwa.BbUserId).Contains(cm.userId)).ToList();
+            var accountsNeedToCreate =
+                bbCms.Where(cm => !usersWithAccount.Select(uwa => uwa.BbUserId).Contains(cm.userId)).ToList();
 
             if (accountsNeedToCreate.Any())
             {
                 var userFilter = new UserFilter
                 {
                     filterTypeSpecified = true,
-                    filterType = (int)UserFilterType.UserByIdWithAvailability,
+                    filterType = (int) UserFilterType.UserByIdWithAvailability,
                     available = true,
                     availableSpecified = true,
                     id = accountsNeedToCreate.Select(bbAccount => bbAccount.userId).ToArray()
@@ -824,12 +873,14 @@ namespace Ecat.Business.Repositories
                                 break;
                         }
                     }
+
                     await ctxManager.Context.SaveChangesAsync();
                 }
             }
 
             reconResult.Students = usersWithAccount
-                .Where(ecm => {
+                .Where(ecm =>
+                {
                     var bbCM = bbCmsVo.First(cm => cm.userId == ecm.BbUserId);
                     return MpRoleTransform.BbWsRoleToEcat(bbCM.roleId) != MpInstituteRoleId.Faculty;
                 })
@@ -842,17 +893,18 @@ namespace Ecat.Business.Repositories
                 }).ToList();
 
             reconResult.Faculty = usersWithAccount
-              .Where(ecm => {
-                  var bbCM = bbCmsVo.First(cm => cm.userId == ecm.BbUserId);
-                  return MpRoleTransform.BbWsRoleToEcat(bbCM.roleId) == MpInstituteRoleId.Faculty;
-              })
-              .Select(ecm => new FacultyInCourse
-              {
-                  FacultyPersonId = ecm.PersonId,
-                  CourseId = reconResult.CourseId,
-                  ReconResultId = reconResult.Id,
-                  BbCourseMemId = bbCms.First(bbcm => bbcm.userId == ecm.BbUserId).id
-              }).ToList();
+                .Where(ecm =>
+                {
+                    var bbCM = bbCmsVo.First(cm => cm.userId == ecm.BbUserId);
+                    return MpRoleTransform.BbWsRoleToEcat(bbCM.roleId) == MpInstituteRoleId.Faculty;
+                })
+                .Select(ecm => new FacultyInCourse
+                {
+                    FacultyPersonId = ecm.PersonId,
+                    CourseId = reconResult.CourseId,
+                    ReconResultId = reconResult.Id,
+                    BbCourseMemId = bbCms.First(bbcm => bbcm.userId == ecm.BbUserId).id
+                }).ToList();
 
             var neededFacultyProfiles = usersWithAccount.Where(ecm =>
             {
@@ -906,11 +958,13 @@ namespace Ecat.Business.Repositories
             return reconResult;
         }
 
-        private async Task<List<int>> RemoveOrFlagUsers(CourseReconcile courseToReconcile, IEnumerable<string> bbIdsToRemove)
+        private async Task<List<int>> RemoveOrFlagUsers(CourseReconcile courseToReconcile,
+            IEnumerable<string> bbIdsToRemove)
         {
             var idsRemoved = new List<int>();
 
-            foreach (var studReconcile in courseToReconcile.StudentsToReconcile.Where(str => bbIdsToRemove.Contains(str.BbUserId)))
+            foreach (var studReconcile in courseToReconcile.StudentsToReconcile.Where(str =>
+                bbIdsToRemove.Contains(str.BbUserId)))
             {
                 idsRemoved.Add(studReconcile.PersonId);
                 var sic = new StudentInCourse
@@ -932,7 +986,8 @@ namespace Ecat.Business.Repositories
                 }
             }
 
-            foreach (var facReconcile in courseToReconcile.FacultyToReconcile.Where(str => bbIdsToRemove.Contains(str.BbUserId)))
+            foreach (var facReconcile in courseToReconcile.FacultyToReconcile.Where(str =>
+                bbIdsToRemove.Contains(str.BbUserId)))
             {
                 idsRemoved.Add(facReconcile.PersonId);
                 var fic = new FacultyInCourse
@@ -960,429 +1015,5 @@ namespace Ecat.Business.Repositories
         }
     }
 
-    //    public async Task<List<Course>> GetAllCourses()
-    //    {
-    //            return await _mainCtx.Courses
-    //                .Where(course => course.AcademyId == Faculty.AcademyId)
-    //                .ToListAsync();
-    //    }
-
-    //    public async Task<List<CategoryVO>> GetBbCategories()
-    //    {
-    //        var filter = new CategoryFilter
-    //        {
-    //            filterType = (int)CategoryFilterTpe.GetAllCourseCategory,
-    //            filterTypeSpecified = true
-    //        };
-    //        var autoRetry = new Retrier<CategoryVO[]>();
-    //        var categories = await autoRetry.Try(() => _bbWs.BbCourseCategories(filter), 3);
-
-    //        return categories.ToList();
-    //    }
-
-    //    public async Task<CourseReconResult> ReconcileCourses()
-    //    {
-    //        var courseFilter = new CourseFilter
-    //        {
-    //            filterTypeSpecified = true,
-    //            filterType = (int) CourseFilterType.LoadByCatId
-    //        };
-
-    //        if (Faculty != null)
-    //        {
-    //            var academy = StaticAcademy.AcadLookupById[Faculty.AcademyId];
-    //            courseFilter.categoryIds = new[] {academy.BbCategoryId};
-    //        }
-    //        else
-    //        {
-    //            var ids = StaticAcademy.AcadLookupById.Select(acad => acad.Value.BbCategoryId).ToArray();
-    //            courseFilter.categoryIds = ids;
-    //        }
-
-    //        var autoRetry = new Retrier<CourseVO[]>();
-    //        var bbCoursesResult = await autoRetry.Try(() => _bbWs.BbCourses(courseFilter), 3);
-
-    //        if (bbCoursesResult == null) throw new InvalidDataException("No Bb Responses received");
-
-    //        var queryKnownCourses = _mainCtx.Courses.AsQueryable();
-
-    //        queryKnownCourses = Faculty == null
-    //            ? queryKnownCourses
-    //            : queryKnownCourses.Where(crse => crse.AcademyId == Faculty.AcademyId);
-
-    //        var knownCoursesIds = queryKnownCourses.Select(crse => crse.BbCourseId).ToList();
-
-    //        var reconResult = new CourseReconResult
-    //        {
-    //            Id = Guid.NewGuid(),
-    //            AcademyId = Faculty?.AcademyId,
-    //            Courses = new List<Course>()
-    //        };
-
-    //        foreach (var nc in bbCoursesResult
-    //            .Where(bbc => !knownCoursesIds.Contains(bbc.id))
-    //            .Select(bbc => new Course
-    //        {
-    //            BbCourseId = bbc.id,
-    //            AcademyId = Faculty.AcademyId,
-    //            Name = bbc.name,
-    //            StartDate = DateTime.Now,
-    //            GradDate = DateTime.Now.AddDays(25)
-    //        }))
-    //        {
-    //            reconResult.NumAdded += 1; 
-    //            reconResult.Courses.Add(nc);
-    //            _mainCtx.Courses.Add(nc);
-    //        }
-
-    //        await _mainCtx.SaveChangesAsync();
-
-    //        foreach (var course in reconResult.Courses)
-    //        {
-    //            course.ReconResultId = reconResult.Id;
-    //        }
-
-    //        return reconResult;
-    //    }
-
-    //    public async Task<Course> GetAllCourseMembers(int courseId)
-    //    {
-    //       var query = await _mainCtx.Courses
-    //            .Where(c => c.Id == courseId)
-    //            .Select(c => new
-    //            {
-    //                c, 
-    //                Students = c.Students
-    //                .Where(sic => !sic.IsDeleted)
-    //                .Select(sic => new
-    //                {
-    //                    sic,
-    //                    sic.Student,
-    //                    sic.Student.Person
-    //                }),
-    //                Faculty = c.Faculty.Where(fic => !fic.IsDeleted)
-    //                .Select(fic => new
-    //                {
-    //                    fic,
-    //                    fic.FacultyProfile,
-    //                    fic.FacultyProfile.Person
-    //                })
-    //            })
-    //            .SingleAsync();
-
-    //        return query.c;
-    //    }
-
-    //    public async Task<MemReconResult> ReconcileCourseMembers(int courseId)
-    //    {
-    //        var ecatCourse = await _mainCtx.Courses
-    //            .Where(crse => crse.Id == courseId)
-    //            .Select(crse => new CourseReconcile
-    //        {
-    //            Course = crse,
-    //            FacultyToReconcile = crse.Faculty.Select(fac => new UserReconcile
-    //            {
-    //                PersonId = fac.FacultyPersonId,
-    //                BbUserId = fac.FacultyProfile.Person.BbUserId,
-    //                CanDelete = !fac.FacSpComments.Any() &&
-    //                !fac.FacSpResponses.Any() &&
-    //                !fac.FacStratResponse.Any()
-    //            }).ToList(),
-    //            StudentsToReconcile = crse.Students.Select(sic => new UserReconcile
-    //            {
-    //                PersonId = sic.StudentPersonId,
-    //                BbUserId = sic.Student.Person.BbUserId,
-    //                CanDelete = !sic.WorkGroupEnrollments.Any()
-    //            }).ToList()
-    //        }).SingleOrDefaultAsync();
-
-    //        Contract.Assert(ecatCourse != null);
-
-    //        var reconResult = new MemReconResult
-    //        {
-    //            Id = Guid.NewGuid(),
-    //            CourseId = courseId,
-    //            AcademyId = Faculty?.AcademyId
-    //        };
-
-    //        var autoRetryCm = new Retrier<CourseMembershipVO[]>();
-
-    //        var courseMemFilter = new MembershipFilter
-    //        {
-    //            filterTypeSpecified = true,
-    //            filterType = (int)CrseMembershipFilterType.LoadByCourseId,
-    //        };
-
-    //        var bbCourseMems = await autoRetryCm.Try(() => _bbWs.BbCourseMembership(ecatCourse.Course.BbCourseId, courseMemFilter), 3);
-
-    //        var existingCrseUserIds = ecatCourse.FacultyToReconcile
-    //            .Select(fac => fac.BbUserId).ToList();
-
-    //        existingCrseUserIds.AddRange(ecatCourse.StudentsToReconcile.Select(sic => sic.BbUserId));
-
-    //        var newMembers = bbCourseMems
-    //            .Where(cm => !existingCrseUserIds.Contains(cm.userId))
-    //            .Where(cm => cm.available == true)
-    //            .ToList();
-
-    //        if (newMembers.Any())
-    //        {
-    //            //var queryCr = await autoRetryCr.Try(client.getCourseRolesAsync(bbCourseMems.Select(bbcm => bbcm.roleId).ToArray()), 3);
-
-    //            //var bbCourseRoles = queryCr.@return.ToList();
-    //            reconResult = await AddNewUsers(newMembers, reconResult);
-    //        }
-
-    //        var usersBbIdsToRemove = existingCrseUserIds.Where(ecu => !bbCourseMems.Select(cm => cm.userId).Contains(ecu)).ToList();
-
-    //        if (usersBbIdsToRemove.Any())
-    //        {
-    //           reconResult.RemovedIds = await RemoveOrFlagUsers(ecatCourse, usersBbIdsToRemove);
-    //        }
-
-    //        return reconResult;
-    //    }
-
-    //    public SaveResult SaveClientChanges(JObject saveBundle)
-    //    {
-    //        var efContext = new EFContextProvider<EcatContext>();
-    //        return efContext.SaveChanges(saveBundle);
-    //    }
-
-    //    private async Task<MemReconResult> AddNewUsers(IEnumerable<CourseMembershipVO> bbCmsVo, MemReconResult reconResult)
-    //    {
-    //        var bbCms = bbCmsVo.ToList();
-    //        var bbCmUserIds = bbCms.Select(bbcm => bbcm.userId).ToList();
-
-    //        var usersWithAccount = await _mainCtx.People
-    //            .Where(p => bbCmUserIds.Contains(p.BbUserId))
-    //            .Select(p => new
-    //            {
-    //                p.BbUserId,
-    //                p.PersonId,
-    //                p.MpInstituteRole
-    //            })
-    //            .ToListAsync();
-
-    //        var accountsNeedToCreate = bbCms.Where(cm => !usersWithAccount.Select(uwa => uwa.BbUserId).Contains(cm.userId)).ToList();
-
-    //        if (accountsNeedToCreate.Any())
-    //        {
-    //            var userFilter = new UserFilter
-    //            {
-    //                filterTypeSpecified = true,
-    //                filterType = (int)UserFilterType.UserByIdWithAvailability,
-    //                available = true,
-    //                availableSpecified = true,
-    //                id = accountsNeedToCreate.Select(bbAccount => bbAccount.userId).ToArray()
-    //            };
-
-    //            var autoRetryUsers = new Retrier<UserVO[]>();
-    //            var bbUsers = await autoRetryUsers.Try(() => _bbWs.BbCourseUsers(userFilter), 3);
-    //            var courseMems = bbCms;
-
-    //            if (bbUsers != null)
-    //            {
-
-    //                var users = bbUsers.Select(bbu =>
-    //                {
-    //                    var cm = courseMems.First(bbcm => bbcm.userId == bbu.id);
-    //                    return new Person
-    //                    {
-    //                        MpInstituteRole = MpRoleTransform.BbWsRoleToEcat(cm.roleId),
-    //                        BbUserId = bbu.id,
-    //                        BbUserName = bbu.name,
-    //                        Email = $"{cm.id}-{bbu.extendedInfo.emailAddress}",
-    //                        IsActive = true,
-    //                        LastName = bbu.extendedInfo.familyName,
-    //                        FirstName = bbu.extendedInfo.givenName,
-    //                        MpGender = MpGender.Unk,
-    //                        MpAffiliation = MpAffiliation.Unk,
-    //                        MpComponent = MpComponent.Unk,
-    //                        RegistrationComplete = false,
-    //                        MpPaygrade = MpPaygrade.Unk,
-    //                        ModifiedById = Faculty.PersonId,
-    //                        ModifiedDate = DateTime.Now
-    //                    };
-    //                }).ToList();
-
-    //                foreach (var user in users)
-    //                {
-    //                    _mainCtx.People.Add(user);
-
-    //                }
-
-    //                reconResult.NumOfAccountCreated = await _mainCtx.SaveChangesAsync();
-
-    //                foreach (var user in users)
-    //                {
-    //                    usersWithAccount.Add(new
-    //                    {
-    //                        user.BbUserId,
-    //                        user.PersonId,
-    //                        user.MpInstituteRole
-    //                    });
-
-    //                    switch (user.MpInstituteRole)
-    //                    {
-    //                        case MpInstituteRoleId.Faculty:
-    //                            user.Faculty = new ProfileFaculty
-    //                            {
-    //                                PersonId = user.PersonId,
-    //                                AcademyId = reconResult.AcademyId,
-    //                                HomeStation = StaticAcademy.AcadLookupById[reconResult.AcademyId].Base.ToString(),
-    //                                IsReportViewer = false,
-    //                                IsCourseAdmin = false
-    //                            };
-    //                            break;
-    //                        case MpInstituteRoleId.Student:
-    //                            user.Student = new ProfileStudent
-    //                            {
-    //                                PersonId = user.PersonId
-    //                            };
-    //                            break;
-    //                        default:
-    //                            user.Student = new ProfileStudent
-    //                            {
-    //                                PersonId = user.PersonId
-    //                            };
-    //                            break;
-    //                    }
-    //                }
-    //                await _mainCtx.SaveChangesAsync();
-    //            }
-    //        }
-
-    //        reconResult.Students = usersWithAccount
-    //            .Where(ecm => {
-    //                var bbCM = bbCmsVo.First(cm => cm.userId == ecm.BbUserId);
-    //                return MpRoleTransform.BbWsRoleToEcat(bbCM.roleId) != MpInstituteRoleId.Faculty;
-    //            })
-    //            .Select(ecm => new StudentInCourse
-    //            {
-    //                StudentPersonId = ecm.PersonId,
-    //                CourseId = reconResult.CourseId,
-    //                ReconResultId = reconResult.Id,
-    //                BbCourseMemId = bbCms.First(bbcm => bbcm.userId == ecm.BbUserId).id
-    //            }).ToList();
-
-    //        reconResult.Faculty = usersWithAccount
-    //          .Where(ecm => {
-    //              var bbCM = bbCmsVo.First(cm => cm.userId == ecm.BbUserId);
-    //              return MpRoleTransform.BbWsRoleToEcat(bbCM.roleId) == MpInstituteRoleId.Faculty;
-    //          })
-    //          .Select(ecm => new FacultyInCourse
-    //          {
-    //              FacultyPersonId = ecm.PersonId,
-    //              CourseId = reconResult.CourseId,
-    //              ReconResultId = reconResult.Id,
-    //              BbCourseMemId = bbCms.First(bbcm => bbcm.userId == ecm.BbUserId).id
-    //          }).ToList();
-
-    //        var neededFacultyProfiles = usersWithAccount.Where(ecm =>
-    //        {
-    //            var bbCM = bbCmsVo.First(cm => cm.userId == ecm.BbUserId);
-    //            return MpRoleTransform.BbWsRoleToEcat(bbCM.roleId) == MpInstituteRoleId.Faculty;
-    //        }).Select(ecm => ecm.PersonId);
-
-    //        var existingFacultyProfiles = _mainCtx.Faculty
-    //            .Where(fac => neededFacultyProfiles.Contains(fac.PersonId))
-    //            .Select(fac => fac.PersonId);
-
-    //        var newFacultyProfiles = neededFacultyProfiles
-    //            .Where(id => !existingFacultyProfiles.Contains(id))
-    //            .Select(id => new ProfileFaculty
-    //            {
-    //                PersonId = id,
-    //                AcademyId = reconResult.AcademyId,
-    //                HomeStation = StaticAcademy.AcadLookupById[reconResult.AcademyId].Base.ToString(),
-    //                IsReportViewer = false,
-    //                IsCourseAdmin = false
-    //            });
-
-    //        var neededStudentProfiles = usersWithAccount.Where(ecm =>
-    //        {
-    //            var bbCM = bbCmsVo.First(cm => cm.userId == ecm.BbUserId);
-    //            return MpRoleTransform.BbWsRoleToEcat(bbCM.roleId) != MpInstituteRoleId.Faculty;
-    //        }).Select(ecm => ecm.PersonId);
-
-    //        var existingStudentProfiles = _mainCtx.Students
-    //            .Where(stud => neededStudentProfiles.Contains(stud.PersonId))
-    //            .Select(stud => stud.PersonId);
-
-    //        var newStudentProfiles = neededStudentProfiles
-    //            .Where(id => !existingStudentProfiles.Contains(id))
-    //            .Select(id => new ProfileStudent
-    //            {
-    //                PersonId = id,
-    //            });
-
-    //        if (newFacultyProfiles.Any()) _mainCtx.Faculty.AddRange(newFacultyProfiles);
-    //        if (newStudentProfiles.Any()) _mainCtx.Students.AddRange(newStudentProfiles);
-
-    //        if (reconResult.Students.Any()) _mainCtx.StudentInCourses.AddRange(reconResult.Students);
-
-    //        if (reconResult.Faculty.Any()) _mainCtx.FacultyInCourses.AddRange(reconResult.Faculty);
-
-    //        reconResult.NumAdded = reconResult.Faculty.Any() || reconResult.Students.Any()
-    //            ? await _mainCtx.SaveChangesAsync()
-    //            : 0;
-
-    //        return reconResult;
-    //    }
-
-    //    private async Task<List<int>> RemoveOrFlagUsers(CourseReconcile courseToReconcile, IEnumerable<string> bbIdsToRemove)
-    //    {
-    //        var idsRemoved = new List<int>();
-
-    //        foreach (var studReconcile in courseToReconcile.StudentsToReconcile.Where(str => bbIdsToRemove.Contains(str.BbUserId)))
-    //        {
-    //            idsRemoved.Add(studReconcile.PersonId);
-    //            var sic  = new StudentInCourse
-    //            {
-    //                StudentPersonId = studReconcile.PersonId,
-    //                CourseId = courseToReconcile.Course.Id
-    //            };
-
-    //            if (studReconcile.CanDelete)
-    //            {
-    //                _mainCtx.Entry(sic).State = EntityState.Deleted;
-    //            }
-    //            else
-    //            {
-    //                sic.DeletedDate = DateTime.Now;
-    //                sic.DeletedById = Faculty.PersonId;
-    //                sic.IsDeleted = true;
-    //                _mainCtx.Entry(sic).State = EntityState.Modified;
-    //            }
-    //        }
-
-    //        foreach (var facReconcile in courseToReconcile.FacultyToReconcile.Where(str => bbIdsToRemove.Contains(str.BbUserId)))
-    //        {
-    //            idsRemoved.Add(facReconcile.PersonId);
-    //            var fic = new FacultyInCourse
-    //            {
-    //                FacultyPersonId = facReconcile.PersonId,
-    //                CourseId = courseToReconcile.Course.Id
-    //            };
-
-    //            if (facReconcile.CanDelete)
-    //            {
-    //                _mainCtx.Entry(fic).State = EntityState.Deleted;
-    //            }
-    //            else
-    //            {
-    //                fic.DeletedDate = DateTime.Now;
-    //                fic.DeletedById = Faculty.PersonId;
-    //                fic.IsDeleted = true;
-    //                _mainCtx.Entry(fic).State = EntityState.Modified;
-    //            }
-    //        }
-
-    //        await _mainCtx.SaveChangesAsync();
-
-    //        return idsRemoved;
-    //    }
-
-    //}
 }
+

@@ -20,6 +20,7 @@ using Ecat.Data.Models.Faculty.Config;
 using Ecat.Data.Models.Student.Config;
 using Ecat.Data.Models.Faculty;
 using Ecat.Data.Models.User;
+using Ecat.Data.Models.Canvas.Config;
 
 namespace Ecat.Data.Contexts
 {
@@ -71,6 +72,7 @@ namespace Ecat.Data.Contexts
             mb.Configurations.Add(new ConfigStratResponse());
             mb.Configurations.Add(new ConfigPerson());
             mb.Configurations.Add(new ConfigFacSpResponse());
+            mb.Configurations.Add(new ConfigCanvasLogin());
 
             //mb.Ignore<Academy>();
             mb.Ignore<Security>();

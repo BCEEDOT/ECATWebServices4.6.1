@@ -23,6 +23,7 @@ using Ecat.Data.Models.User;
 //using Ecat.Shared.DbMgr.Config;
 //using Ecat.Shared.DbMgr.Context;
 using Ecat.Data.Contexts.Config;
+using Ecat.Data.Models.Canvas.Config;
 
 namespace Ecat.Data.Contexts
 {
@@ -52,6 +53,8 @@ namespace Ecat.Data.Contexts
             mb.Configurations.Add(new FacConfigPerson());
             mb.Configurations.Add(new FacConfigStudWrkGrp());
             mb.Configurations.Add(new FacConfigStudCrse());
+            mb.Configurations.Add(new ConfigCanvasLogin());
+
 
             //var typesToRegister = Assembly.GetExecutingAssembly().GetTypes()
             //    .Where(type => !string.IsNullOrEmpty(type.Namespace))

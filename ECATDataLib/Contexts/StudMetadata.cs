@@ -24,6 +24,7 @@ using Ecat.Data.Models.User;
 //using Ecat.Shared.DbMgr.Config;
 //using Ecat.Shared.DbMgr.Context;
 using Ecat.Data.Contexts.Config;
+using Ecat.Data.Models.Canvas.Config;
 
 namespace Ecat.Data.Contexts
 {
@@ -52,6 +53,8 @@ namespace Ecat.Data.Contexts
             mb.Configurations.Add(new ConfigFacSpResponse());
             mb.Configurations.Add(new ConfigFacultyInCourse());
             mb.Configurations.Add(new StudConfigProfileFaculty());
+
+            mb.Configurations.Add(new ConfigCanvasLogin());
 
             mb.Ignore(new List<Type>
             {

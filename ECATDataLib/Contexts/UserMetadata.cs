@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
+using Ecat.Data.Models.Canvas.Config;
 //using Ecat.Shared.Core.ModelLibrary.Cognitive;
 using Ecat.Data.Models.Cognitive;
 using Ecat.Data.Models.Cognitive.Config;
@@ -44,6 +45,8 @@ namespace Ecat.Data.Contexts
             mb.Configurations.Add(new ConfigCogInstrument());
             mb.Configurations.Add(new ConfigCogInventory());
             mb.Configurations.Add(new ConfigCogResponse());
+
+            mb.Configurations.Add(new ConfigCanvasLogin());
 
             mb.Entity<IdToken>().HasKey(p => p.PersonId);
 

@@ -15,6 +15,7 @@ using Ecat.Data.Models.Student;
 using Ecat.Data.Models.School;
 //using Ecat.Shared.Core.Utility;
 using Ecat.Data.Static;
+using Ecat.Data.Validation;
 
 namespace Ecat.Business.Guards
 {
@@ -31,22 +32,27 @@ namespace Ecat.Business.Guards
         {
             var infos = wgSaveMap.Single(map => map.Key == tWg).Value;
 
+            //Database call
             var pubWgs = GetPublishingWgData(svrWgIds, ctxProvider);
 
-            if (pubWgs == null) {
-                var errorMessage = "The database did not return a publishable workgroup.";
-                var error = infos.Select(
-                            info => new EFEntityError(info, "Publication Error", errorMessage, "MpSpStatus"));
-                throw new EntityErrorsException(error);
-            }
 
-            if (pubWgs.Count() < svrWgIds.Count())
+            //UNIT TEST: Are all groups publishable?
+            //if (pubWgs.Count() < svrWgIds.Count())
+            //{
+            //    var missingGrps = pubWgs.Where(wg => {
+            //        if (svrWgIds.Contains(wg.Id)) { return false; }
+            //        return true;
+            //    });
+
+            //    var errorMessage = "Some groups were found to be unpublishable";
+            //    var error = infos.Select(
+            //                info => new EFEntityError(info, "Publication Error", errorMessage, "MpSpStatus"));
+            //    throw new EntityErrorsException(error);
+
+            //}
+
+            if (!AllWorkGroupsArePublished(pubWgs, svrWgIds))
             {
-                var missingGrps = pubWgs.Where(wg => {
-                    if (svrWgIds.Contains(wg.Id)) { return false; }
-                    return true;
-                });
-
                 var errorMessage = "Some groups were found to be unpublishable";
                 var error = infos.Select(
                             info => new EFEntityError(info, "Publication Error", errorMessage, "MpSpStatus"));
@@ -54,13 +60,17 @@ namespace Ecat.Business.Guards
 
             }
 
+
             foreach (var wg in pubWgs)
             {
+
                 var stratScoreInterval = 1m/wg.PubWgMembers.Count();
                 stratScoreInterval = decimal.Round(stratScoreInterval, 4);
                 var stratKeeper = new List<PubWgMember>();
                 var countOfGrp =  wg.PubWgMembers.Count();
                 var totalStratPos = 0;
+
+
                 for (var i = 1; i <= countOfGrp; i++)
                 {
                     totalStratPos += i;
@@ -71,6 +81,7 @@ namespace Ecat.Business.Guards
                     var stratSum = me.PubStratResponses.Sum(strat => strat.StratPosition);
                     stratSum += me.SelfStratPosition;
 
+                    //
                     if (me.PeersDidNotAssessMe.Any() || me.PeersIdidNotAssess.Any() || me.PeersDidNotStratMe.Any() ||
                         me.PeersIdidNotStrat.Any() || me.FacStratPosition == 0 || stratSum != totalStratPos)
                     {
@@ -81,6 +92,7 @@ namespace Ecat.Business.Guards
                             info => new EFEntityError(info, "Publication Error", errorMessage, "MpSpStatus"));
                         throw new EntityErrorsException(error);
                     }
+
                     var peerCount = countOfGrp - 1;
                     var resultScore = ((decimal) me.SpResponseTotalScore / (me.CountSpResponses * 6)) * 100;
                     var spResult = new SpResult
@@ -302,44 +314,12 @@ namespace Ecat.Business.Guards
 
             foreach (var wg in pubWgData)
             {
-                //Dictionary used to keep the assessee personid with an additional dictionary to keep the 
-                //assessee strat position and the number of those position
-                var assesseeStratDict = new Dictionary<int, Dictionary<int, int>>();
+
+                var assesseStratDict = CreateAssesseeStratDictionaryForGroup(wg);
 
                 foreach (var gm in wg.PubWgMembers)
                 {
-                    foreach (var response in gm.PubStratResponses)
-                    {
-                        Dictionary<int, int> assesseResponses;
-
-                        var hasAssessee = assesseeStratDict.TryGetValue(response.AssesseeId, out assesseResponses);
-
-                        var position = response.StratPosition > gm.SelfStratPosition
-                            ? response.StratPosition - 1
-                            : response.StratPosition;
-
-                        if (!hasAssessee)
-                        {
-                            assesseeStratDict[response.AssesseeId] = new Dictionary<int, int>();
-                        }
-
-                        int stratPositionCount;
-                        var hasStratPosition = assesseeStratDict[response.AssesseeId].TryGetValue(position, out stratPositionCount);
-
-                        if (!hasStratPosition)
-                        {
-                            assesseeStratDict[response.AssesseeId][position] = 1;
-                        } else
-                        {
-                            assesseeStratDict[response.AssesseeId][position] = stratPositionCount += 1;
-                        }
-
-                    }
-                }
-
-                foreach (var gm in wg.PubWgMembers)
-                {
-                    var myResponses = assesseeStratDict[gm.StudentId];
+                    var myResponses = assesseStratDict[gm.StudentId];
                     gm.StratTable = myResponses.Select(mr => new PubWgStratTable
                     {
                         Position = mr.Key,
@@ -349,6 +329,87 @@ namespace Ecat.Business.Guards
             }
 
             return pubWgData;
+        }
+
+        internal static Dictionary<int, Dictionary<int, int>> CreateAssesseeStratDictionaryForGroup(PubWg wg)
+        {
+            //Dictionary used to keep the assessee personid with an additional dictionary to keep the 
+            //assessee strat position and the number of those position
+            var assesseeStratDict = new Dictionary<int, Dictionary<int, int>>();
+
+            foreach (var gm in wg.PubWgMembers)
+            {
+
+                foreach (var response in gm.PubStratResponses)
+                {
+                    Dictionary<int, int> assesseResponses;
+
+                    var hasAssessee = assesseeStratDict.TryGetValue(response.AssesseeId, out assesseResponses);
+
+                    var position = response.StratPosition > gm.SelfStratPosition
+                        ? response.StratPosition - 1
+                        : response.StratPosition;
+
+                    if (!hasAssessee)
+                    {
+                        assesseeStratDict[response.AssesseeId] = new Dictionary<int, int>();
+                    }
+
+                    int stratPositionCount;
+                    var hasStratPosition = assesseeStratDict[response.AssesseeId].TryGetValue(position, out stratPositionCount);
+
+                    if (!hasStratPosition)
+                    {
+                        assesseeStratDict[response.AssesseeId][position] = 1;
+                    }
+                    else
+                    {
+                        assesseeStratDict[response.AssesseeId][position] = stratPositionCount += 1;
+                    }
+
+                }
+            }
+
+            return assesseeStratDict;
+
+        }
+
+        internal static bool AllWorkGroupsArePublished(IEnumerable<PubWg> pubWgs, IEnumerable<int> svrWgIds)
+        {
+
+            if (pubWgs == null)
+            {
+                //var errorMessage = "The database did not return a publishable workgroup.";
+                //var error = infos.Select(
+                //    info => new EFEntityError(info, "Publication Error", errorMessage, "MpSpStatus"));
+                //throw new EntityErrorsException(error);
+
+                return false;
+            }
+
+            if (pubWgs.Count() < svrWgIds.Count())
+            {
+                //var missingGrps = pubWgs.Where(wg => {
+
+                //    if (svrWgIds.Contains(wg.Id))
+                //    {
+                //        return false;
+                //    }
+
+                //    return true;
+                //});
+
+                //var errorMessage = "Some groups were found to be unpublishable";
+                //var error = infos.Select(
+                //    info => new EFEntityError(info, "Publication Error", errorMessage, "MpSpStatus"));
+                //throw new EntityErrorsException(error);
+
+                return false;
+
+            }
+
+            return true;
+
         }
     }
 }

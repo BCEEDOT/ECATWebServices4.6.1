@@ -126,7 +126,9 @@
     <Compile Include="Utilities\UserExceptions.cs" />
     <Compile Include="Utilities\WsSecurityBehavior.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Business\" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
