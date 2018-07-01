@@ -11,18 +11,24 @@ using Ecat.Data.Models.Common;
 using Ecat.Data.Models.Student;
 using FluentAssertions;
 using Telerik.JustMock;
+using System.Collections.ObjectModel;
+using Newtonsoft.Json;
+using System.Reflection;
+using System.Globalization;
+using System.Threading;
+using Ecat.Data.Models.User;
 
 namespace Ecat.Business.Guards.Tests
 {
-    public class CSVSpResponse : SpResponse
+    public class CsvSpResponse : SpResponse
     {
 
        
-        public static CSVSpResponse FromCsv(string line)
+        public static SpResponse FromCsv(string line)
         {
             var split = line.Split(',');
 
-            CSVSpResponse tempSpResponse = new CSVSpResponse
+            SpResponse csvSpResponse = new SpResponse
             {
                 AssessorPersonId = int.Parse(split[0]),
                 AssesseePersonId = int.Parse(split[1]),
@@ -32,16 +38,48 @@ namespace Ecat.Business.Guards.Tests
                 MpItemResponse = split[5],
                 ItemModelScore = int.Parse(split[6]),
                 ModifiedById = int.Parse(split[7]),
-                ModifiedDate = DateTime.Parse(split[8])
+          
+                ModifiedDate = DateTime.ParseExact(split[8], "M/dd/yyyy H:mm", Thread.CurrentThread.CurrentCulture)
+        };
+
+
+            return csvSpResponse;
+        }
+    }
+
+
+    public class CsvPerson : Person {
+
+        public static Person FromCsv(string line) {
+
+            var split = line.Split(',');
+
+            Person csvPerson = new Person {
+                PersonId = int.Parse(split[0]),
+                IsActive = bool.Parse(split[1]),
+                LastName = split[4],
+                FirstName = split[5]
             };
 
-
-            return tempSpResponse;
+            return csvPerson;
         }
     }
 
     public class WorkGroupPublishBuilder
     {
+
+        public List<Person> Persons;
+        public List<SpResponse> SpResponses;
+
+
+        public WorkGroupPublishBuilder(string personsFileName, string spResponsesFileName)
+        {
+            Persons = createPersons(personsFileName);
+            SpResponses = CreateSpResponses(spResponsesFileName);
+
+        }
+
+
         public PubWg BuildPubWg()
         {
             var pubWorkGroup = Mock.Create<PubWg>();
@@ -55,121 +93,142 @@ namespace Ecat.Business.Guards.Tests
             pubWorkGroup.WgFacTopStrat = 10;
             pubWorkGroup.StratDivisor = 10;
 
-            var student01 = CreatePubWgMember(1, "test", 10);
-            var student02 = CreatePubWgMember(1, "test", 10);
 
-            var groupMembers = new List<PubWgMember> {student01, student02};
+            //Made from CrseStudentInGroup
+            var groupMembers = new List<PubWgMember>();
+
+            Persons.ForEach(person => {
+                groupMembers.Add(CreatePubWgMember(person));
+
+            });
 
             pubWorkGroup.PubWgMembers = groupMembers;
+      
+
 
             return pubWorkGroup;
         }
 
-        private PubWgBreakOut CreatePubWgBreakOut()
-        {
-            return new PubWgBreakOut
-            {
-                NotDisplayed = gm.AssesseeSpResponses
-                    .Where(response => response.AssessorPersonId != response.AssesseePersonId)
-                    .Count(response => response.MpItemResponse == MpSpItemResponse.Nd),
-                IneffA = gm.AssesseeSpResponses
-                    .Where(response => response.AssessorPersonId != response.AssesseePersonId)
-                    .Count(response => response.MpItemResponse == MpSpItemResponse.Iea),
-                IneffU = gm.AssesseeSpResponses
-                    .Where(response => response.AssessorPersonId != response.AssesseePersonId)
-                    .Count(response => response.MpItemResponse == MpSpItemResponse.Ieu),
-                EffA = gm.AssesseeSpResponses
-                    .Where(response => response.AssessorPersonId != response.AssesseePersonId)
-                    .Count(response => response.MpItemResponse == MpSpItemResponse.Ea),
-                EffU = gm.AssesseeSpResponses
-                    .Where(response => response.AssessorPersonId != response.AssesseePersonId)
-                    .Count(response => response.MpItemResponse == MpSpItemResponse.Eu),
-                HighEffA = gm.AssesseeSpResponses
-                    .Where(response => response.AssessorPersonId != response.AssesseePersonId)
-                    .Count(response => response.MpItemResponse == MpSpItemResponse.Hea),
-                HighEffU = gm.AssesseeSpResponses
-                    .Where(response => response.AssessorPersonId != response.AssesseePersonId)
-                    .Count(response => response.MpItemResponse == MpSpItemResponse.Heu)
-            };
-        }
+        //private PubWgBreakOut CreatePubWgBreakOut()
+        //{
+        //    return new PubWgBreakOut
+        //    {
+        //        NotDisplayed = gm.AssesseeSpResponses
+        //            .Where(response => response.AssessorPersonId != response.AssesseePersonId)
+        //            .Count(response => response.MpItemResponse == MpSpItemResponse.Nd),
+        //        IneffA = gm.AssesseeSpResponses
+        //            .Where(response => response.AssessorPersonId != response.AssesseePersonId)
+        //            .Count(response => response.MpItemResponse == MpSpItemResponse.Iea),
+        //        IneffU = gm.AssesseeSpResponses
+        //            .Where(response => response.AssessorPersonId != response.AssesseePersonId)
+        //            .Count(response => response.MpItemResponse == MpSpItemResponse.Ieu),
+        //        EffA = gm.AssesseeSpResponses
+        //            .Where(response => response.AssessorPersonId != response.AssesseePersonId)
+        //            .Count(response => response.MpItemResponse == MpSpItemResponse.Ea),
+        //        EffU = gm.AssesseeSpResponses
+        //            .Where(response => response.AssessorPersonId != response.AssesseePersonId)
+        //            .Count(response => response.MpItemResponse == MpSpItemResponse.Eu),
+        //        HighEffA = gm.AssesseeSpResponses
+        //            .Where(response => response.AssessorPersonId != response.AssesseePersonId)
+        //            .Count(response => response.MpItemResponse == MpSpItemResponse.Hea),
+        //        HighEffU = gm.AssesseeSpResponses
+        //            .Where(response => response.AssessorPersonId != response.AssesseePersonId)
+        //            .Count(response => response.MpItemResponse == MpSpItemResponse.Heu)
+        //    };
+        //}
 
-        private PubWgMember CreatePubWgMember(int studentId, string name, int facStratPosition )
+        private PubWgMember CreatePubWgMember(Person person)
         {
 
         
             var pubWgMember = Mock.Create<PubWgMember>();
-            var assesseeSpResponses = CreateAssesseeSpResponses();
 
-            pubWgMember.StudentId = studentId;
-            pubWgMember.Name = name;
+            pubWgMember.StudentId = person.PersonId;
+            pubWgMember.Name = person.FirstName + person.LastName;
 
-            pubWgMember.CountSpResponses = gm.AssesseeSpResponses
-                        .Count(response => response.AssessorPersonId != gm.StudentId),
+            //pubWgMember.CountSpResponses = gm.AssesseeSpResponses
+            //            .Count(response => response.AssessorPersonId != gm.StudentId),
 
-            pubWgMember.SpResponseTotalScore = gm.AssesseeSpResponses
-                        .Where(response => response.AssessorPersonId != gm.StudentId)
-                        .Sum(response => response.ItemModelScore),
+            //pubWgMember.SpResponseTotalScore = gm.AssesseeSpResponses
+            //            .Where(response => response.AssessorPersonId != gm.StudentId)
+            //            .Sum(response => response.ItemModelScore),
 
-            pubWgMember.FacStratPosition = facStratPosition;
+            //pubWgMember.FacStratPosition = facStratPosition;
 
-            pubWgMember.HasSpResult = wg.SpResults.Any(result => result.StudentId == gm.StudentId),
+            //pubWgMember.HasSpResult = wg.SpResults.Any(result => result.StudentId == gm.StudentId),
 
-            pubWgMember.HasStratResult = wg.SpStratResults.Any(result => result.StudentId == gm.StudentId),
+            //pubWgMember.HasStratResult = wg.SpStratResults.Any(result => result.StudentId == gm.StudentId),
 
-            pubWgMember.BreakOut = CreatePubWgBreakOut();
+            //pubWgMember.BreakOut = CreatePubWgBreakOut();
 
-            pubWgMember.SelfStratPosition = gm.AssesseeStratResponse
-                .Where(strat => strat.AssessorPersonId == gm.StudentId)
-                .Select(strat => strat.StratPosition).FirstOrDefault();
+            //pubWgMember.SelfStratPosition = gm.AssesseeStratResponse
+            //    .Where(strat => strat.AssessorPersonId == gm.StudentId)
+            //    .Select(strat => strat.StratPosition).FirstOrDefault();
 
-            pubWgMember.PubStratResponses =
-                gm.AssessorStratResponse.Where(strat => strat.AssesseePersonId != gm.StudentId)
-                    .Select(strat => new PubStratResponse
-                    {
-                        AssesseeId = strat.AssesseePersonId,
-                        StratPosition = strat.StratPosition
-                    });
+            //pubWgMember.PubStratResponses =
+            //    gm.AssessorStratResponse.Where(strat => strat.AssesseePersonId != gm.StudentId)
+            //        .Select(strat => new PubStratResponse
+            //        {
+            //            AssesseeId = strat.AssesseePersonId,
+            //            StratPosition = strat.StratPosition
+            //        });
 
-            pubWgMember.PeersDidNotAssessMe = prundedGm.Where(peer => peer.AssessorSpResponses
-                                                                          .Count(response =>
-                                                                              response.AssesseePersonId ==
-                                                                              gm.StudentId) == 0)
-                .Select(peer => peer.StudentId);
+            //pubWgMember.PeersDidNotAssessMe = prundedGm.Where(peer => peer.AssessorSpResponses
+            //                                                              .Count(response =>
+            //                                                                  response.AssesseePersonId ==
+            //                                                                  gm.StudentId) == 0)
+            //    .Select(peer => peer.StudentId);
 
-            pubWgMember.PeersIdidNotAssess = prundedGm.Where(peer => peer.AssesseeSpResponses
-                                                                         .Count(response =>
-                                                                             response.AssessorPersonId ==
-                                                                             gm.StudentId) == 0)
-                .Select(peer => peer.StudentId);
+            //pubWgMember.PeersIdidNotAssess = prundedGm.Where(peer => peer.AssesseeSpResponses
+            //                                                             .Count(response =>
+            //                                                                 response.AssessorPersonId ==
+            //                                                                 gm.StudentId) == 0)
+            //    .Select(peer => peer.StudentId);
 
-            pubWgMember.PeersDidNotStratMe = prundedGm.Where(peer => peer.AssessorStratResponse
-                                                             .Count(strat =>
-                                                                 strat.AssesseePersonId == gm.StudentId) == 0)
-                .Select(peer => peer.StudentId);
+            //pubWgMember.PeersDidNotStratMe = prundedGm.Where(peer => peer.AssessorStratResponse
+            //                                                 .Count(strat =>
+            //                                                     strat.AssesseePersonId == gm.StudentId) == 0)
+            //    .Select(peer => peer.StudentId);
 
-            pubWgMember.PeersIdidNotStrat = prundedGm.Where(peer => peer.AssesseeStratResponse
-                                                            .Count(strat =>
-                                                                strat.AssessorPersonId == gm.StudentId) == 0)
-                .Select(peer => peer.StudentId);
+            //pubWgMember.PeersIdidNotStrat = prundedGm.Where(peer => peer.AssesseeStratResponse
+            //                                                .Count(strat =>
+            //                                                    strat.AssessorPersonId == gm.StudentId) == 0)
+            //    .Select(peer => peer.StudentId);
 
             return pubWgMember;
 
         }
 
-        private ICollection<SpResponse> CreateSpResponses()
+        private List<SpResponse> CreateSpResponses(string fileName)
         {
-            return File.ReadAllLines("DataSets\\SpResponses.csv")
-                .Select(CSVSpResponse.FromCsv)
-                .ToList();
+
+            var csvSpRespones = File.ReadAllLines(getPath(fileName))
+                .Select(CsvSpResponse.FromCsv).ToList();
+
+   
+            return csvSpRespones;
+        }
+
+        private List<Person> createPersons(string fileName) {
+
+            var csvPersons = File.ReadAllLines(getPath(fileName))
+                .Select(CsvPerson.FromCsv).ToList();
 
 
+            return csvPersons;
 
         }
 
-        private ICollection<SpResponse> CreateStratResponses()
-        {
+        private string getPath(string fileName) {
 
+            string currentDirectory = Directory.GetCurrentDirectory();
+            return Path.GetFullPath(Path.Combine(currentDirectory, @"..\..\DataSets\", fileName));
         }
+
+        //private ICollection<SpResponse> CreateStratResponses()
+        //{
+
+        //}
 
 
         
@@ -190,7 +249,9 @@ namespace Ecat.Business.Guards.Tests
 
             // Arrange
 
-            IEnumerable<int> svrWgIds = new List<int>() {1, 2, 3, 4};
+            var workGroup = new WorkGroupPublishBuilder("Persons.csv", "SpResponses.csv");
+
+            var pubWorkGroup = workGroup.BuildPubWg();
 
 
 

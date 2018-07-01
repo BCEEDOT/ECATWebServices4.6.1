@@ -25,7 +25,7 @@ namespace ECAT.UnitTests
         public void GetCourses_WithUserInCourses_ReturnCourses()
         {
             // Arrange
-            var courseOps = Mock.Create<CourseOps>();
+            //var courseOps = Mock.Create<CourseOps>();
 
             // Act
 

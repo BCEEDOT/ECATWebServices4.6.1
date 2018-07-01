@@ -129,6 +129,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="DataSets\Persons.csv" />
+    <None Include="DataSets\SpResponses.csv" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

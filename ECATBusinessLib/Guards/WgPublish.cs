@@ -35,22 +35,6 @@ namespace Ecat.Business.Guards
             //Database call
             var pubWgs = GetPublishingWgData(svrWgIds, ctxProvider);
 
-
-            //UNIT TEST: Are all groups publishable?
-            //if (pubWgs.Count() < svrWgIds.Count())
-            //{
-            //    var missingGrps = pubWgs.Where(wg => {
-            //        if (svrWgIds.Contains(wg.Id)) { return false; }
-            //        return true;
-            //    });
-
-            //    var errorMessage = "Some groups were found to be unpublishable";
-            //    var error = infos.Select(
-            //                info => new EFEntityError(info, "Publication Error", errorMessage, "MpSpStatus"));
-            //    throw new EntityErrorsException(error);
-
-            //}
-
             if (!AllWorkGroupsArePublished(pubWgs, svrWgIds))
             {
                 var errorMessage = "Some groups were found to be unpublishable";
