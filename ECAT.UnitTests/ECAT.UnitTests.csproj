@@ -129,8 +129,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="DataSets\FacStratResponses.csv" />
+    <None Include="DataSets\FacStratResponsesWithMissingData.csv" />
     <None Include="DataSets\Persons.csv" />
     <None Include="DataSets\SpResponses.csv" />
+    <None Include="DataSets\SpResponsesWithMissingData.csv" />
+    <None Include="DataSets\StratResponses.csv" />
+    <None Include="DataSets\StratResponsesWithMissingData.csv" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -23,14 +23,14 @@ namespace Ecat.Data.Models.Student.Config
                 p.InventoryItemId
             });
 
-            HasRequired(p => p.Assessor)
-                .WithMany(p => p.AssessorSpResponses)
-                .HasForeignKey(p => new {p.AssessorPersonId, p.CourseId, p.WorkGroupId})
+            HasRequired(response => response.Assessor)
+                .WithMany(crseStuInGroup => crseStuInGroup.AssessorSpResponses)
+                .HasForeignKey(response => new { response.AssessorPersonId, response.CourseId, response.WorkGroupId})
                 .WillCascadeOnDelete(false);
 
-            HasRequired(p => p.Assessee)
-                .WithMany(p => p.AssesseeSpResponses)
-                .HasForeignKey(p => new {p.AssesseePersonId, p.CourseId, p.WorkGroupId})
+            HasRequired(response => response.Assessee)
+                .WithMany(crseStuInGroup => crseStuInGroup.AssesseeSpResponses)
+                .HasForeignKey(response => new {response.AssesseePersonId, response.CourseId, response.WorkGroupId})
                 .WillCascadeOnDelete(false);
 
             HasRequired(p => p.InventoryItem)

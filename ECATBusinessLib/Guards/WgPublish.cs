@@ -23,9 +23,9 @@ namespace Ecat.Business.Guards
 
     public static class WorkGroupPublish
     {
-        private static readonly Type tSpResult = typeof (SpResult);
-        private static readonly Type tStratResult = typeof (StratResult);
-        private static readonly Type tWg = typeof (WorkGroup);
+        private static readonly Type tSpResult = typeof(SpResult);
+        private static readonly Type tStratResult = typeof(StratResult);
+        private static readonly Type tWg = typeof(WorkGroup);
 
         public static SaveMap Publish(SaveMap wgSaveMap, IEnumerable<int> svrWgIds, int loggedInPersonId,
             EFContextProvider<EcatContext> ctxProvider)
@@ -39,19 +39,18 @@ namespace Ecat.Business.Guards
             {
                 var errorMessage = "Some groups were found to be unpublishable";
                 var error = infos.Select(
-                            info => new EFEntityError(info, "Publication Error", errorMessage, "MpSpStatus"));
+                    info => new EFEntityError(info, "Publication Error", errorMessage, "MpSpStatus"));
                 throw new EntityErrorsException(error);
 
             }
 
-
             foreach (var wg in pubWgs)
             {
 
-                var stratScoreInterval = 1m/wg.PubWgMembers.Count();
+                var stratScoreInterval = 1m / wg.PubWgMembers.Count();
                 stratScoreInterval = decimal.Round(stratScoreInterval, 4);
-                var stratKeeper = new List<PubWgMember>();
-                var countOfGrp =  wg.PubWgMembers.Count();
+                var membersStratKeeper = new List<PubWgMember>();
+                var countOfGrp = wg.PubWgMembers.Count();
                 var totalStratPos = 0;
 
 
@@ -60,49 +59,26 @@ namespace Ecat.Business.Guards
                     totalStratPos += i;
                 }
 
-                foreach (var me in wg.PubWgMembers)
+                foreach (var member in wg.PubWgMembers)
                 {
-                    var stratSum = me.PubStratResponses.Sum(strat => strat.StratPosition);
-                    stratSum += me.SelfStratPosition;
 
-                    //
-                    if (me.PeersDidNotAssessMe.Any() || me.PeersIdidNotAssess.Any() || me.PeersDidNotStratMe.Any() ||
-                        me.PeersIdidNotStrat.Any() || me.FacStratPosition == 0 || stratSum != totalStratPos)
+                    if (!MemberHasAllData(member, totalStratPos))
                     {
                         var errorMessage =
-                            $"There was a problem validating necessary information . Problem Flags Are: [Them => Me] NA: !{me.PeersDidNotAssessMe.Count()}, NS: {me.PeersDidNotStratMe.Any()} | [Me => Them] NA: {me.PeersIdidNotAssess.Count()}, NS: {me.PeersIdidNotStrat.Any()} | FacStrat: {me.FacStratPosition}";
+                            $"There was a problem validating necessary information . Problem Flags Are: [Them => Me] NA: !{member.PeersDidNotAssessMe.Count()}, NS: {member.PeersDidNotStratMe.Any()} | [Me => Them] NA: {member.PeersIdidNotAssess.Count()}, NS: {member.PeersIdidNotStrat.Any()} | FacStrat: {member.FacStratPosition}";
 
                         var error = infos.Select(
                             info => new EFEntityError(info, "Publication Error", errorMessage, "MpSpStatus"));
                         throw new EntityErrorsException(error);
+
                     }
 
-                    var peerCount = countOfGrp - 1;
-                    var resultScore = ((decimal) me.SpResponseTotalScore / (me.CountSpResponses * 6)) * 100;
-                    var spResult = new SpResult
-                    {
-                        CourseId = wg.CourseId,
-                        WorkGroupId = wg.Id,
-                        StudentId = me.StudentId,
-                        AssignedInstrumentId = wg.InstrumentId,
-                        CompositeScore = (int)resultScore,
-                        BreakOut = new SpResultBreakOut
-                        {
-                            NotDisplay = me.BreakOut.NotDisplayed,
-                            IneffA = me.BreakOut.IneffA,
-                            IneffU = me.BreakOut.IneffU,
-                            EffA = me.BreakOut.EffA,
-                            EffU = me.BreakOut.EffU,
-                            HighEffA = me.BreakOut.HighEffA,
-                            HighEffU = me.BreakOut.HighEffU
-                        },
-                        MpAssessResult = ConvertScoreToOutcome((int)resultScore),
-                    };
+                    var spResult = CreateSpResultForMember(member, countOfGrp, wg.CourseId, wg.Id, wg.InstrumentId);
 
                     var resultInfo = ctxProvider.CreateEntityInfo(spResult,
-                        me.HasSpResult ? EntityState.Modified : EntityState.Added);
+                        member.HasSpResult ? EntityState.Modified : EntityState.Added);
 
-                    resultInfo.ForceUpdate = me.HasSpResult;
+                    resultInfo.ForceUpdate = member.HasSpResult;
 
                     if (!wgSaveMap.ContainsKey(tSpResult))
                     {
@@ -113,65 +89,31 @@ namespace Ecat.Business.Guards
                         wgSaveMap[tSpResult].Add(resultInfo);
                     }
 
-                    var stratResult = new StratResult
-                    {
-                        CourseId = wg.CourseId,
-                        StudentId = me.StudentId,
-                        WorkGroupId = wg.Id,
-                        ModifiedById = loggedInPersonId,
-                        ModifiedDate = DateTime.Now,
-                        StratCummScore = decimal.Round(me.StratTable.Select(strat =>
-                        {
-                            var multipler = 1 - (strat.Position-1)*stratScoreInterval;
-                            return  multipler*strat.Count;
-                        }).Sum(), 4)
-                    };
+                    
+                    var stratResult = CreateStratResultForMember(member, stratScoreInterval, wg.CourseId, wg.Id, loggedInPersonId);
 
-                    me.StratResult = stratResult;
-                    stratKeeper.Add(me);
+                    member.StratResult = stratResult;
+                    membersStratKeeper.Add(member);
                 }
 
-                var cummScores = new List<decimal>();
-                var oi = 1;
-
-                foreach (var strat in stratKeeper.OrderByDescending(sk => sk.StratResult.StratCummScore))
-                {
-
-                    if (cummScores.Contains(strat.StratResult.StratCummScore) || !cummScores.Any())
-                    {
-                        strat.StratResult.OriginalStratPosition = oi;
-                        cummScores.Add(strat.StratResult.StratCummScore);
-                        continue;
-                    }
-                    ;
-                    cummScores.Add(strat.StratResult.StratCummScore);
-
-                    oi += 1;
-                    strat.StratResult.OriginalStratPosition = oi;
-                }
+                
+                membersStratKeeper = UpdateOriginalStratPositionForMembers(membersStratKeeper);
 
                 var fi = 0;
                 var spInterval = wg.WgSpTopStrat / wg.StratDivisor;
                 var facInterval = wg.WgFacTopStrat / wg.StratDivisor;
 
-
                 foreach (
-                    var gm in
-                        stratKeeper.OrderByDescending(sk => sk.StratResult.StratCummScore)
-                            .ThenBy(sk => sk.FacStratPosition))
+                    var member in
+                    membersStratKeeper.OrderByDescending(sk => sk.StratResult.StratCummScore)
+                        .ThenBy(sk => sk.FacStratPosition))
                 {
-                    var studAwardedPoints = Math.Max(0, wg.WgSpTopStrat - spInterval*fi);
-                    var instrAwardPoints = Math.Max(0, wg.WgFacTopStrat - (facInterval * (gm.FacStratPosition - 1)));
 
-                    //var totalAward = studAwardedPoints + instrAwardPoints;
+                    var updatedMember = CalculateAwardedScoreForMember(member, wg, spInterval, facInterval, fi);
 
-                    gm.StratResult.StudStratAwardedScore = studAwardedPoints;
-                    gm.StratResult.FacStratAwardedScore = instrAwardPoints;
-                    gm.StratResult.FinalStratPosition = fi + 1;
-
-                    var info = ctxProvider.CreateEntityInfo(gm.StratResult,
-                        gm.HasStratResult ? EntityState.Modified : EntityState.Added);
-                    info.ForceUpdate = gm.HasStratResult;
+                    var info = ctxProvider.CreateEntityInfo(updatedMember.StratResult,
+                        updatedMember.HasStratResult ? EntityState.Modified : EntityState.Added);
+                    info.ForceUpdate = updatedMember.HasStratResult;
 
                     if (!wgSaveMap.ContainsKey(tStratResult))
                     {
@@ -185,7 +127,66 @@ namespace Ecat.Business.Guards
                     fi += 1;
                 }
             }
+
             return wgSaveMap;
+        }
+
+        internal static PubWgMember CalculateAwardedScoreForMember(PubWgMember member, PubWg wg, decimal spInterval, decimal facInterval, int fi )
+        {
+            var studAwardedPoints = Math.Max(0, wg.WgSpTopStrat - spInterval * fi);
+            var instrAwardPoints = Math.Max(0, wg.WgFacTopStrat - (facInterval * (member.FacStratPosition - 1)));
+
+            member.StratResult.StudStratAwardedScore = studAwardedPoints;
+            member.StratResult.FacStratAwardedScore = instrAwardPoints;
+            member.StratResult.FinalStratPosition = fi + 1;
+
+            return member;
+        }
+
+        internal static StratResult CreateStratResultForMember(PubWgMember member, decimal stratScoreInterval,  int courseId, int workGroupId, int loggedInPersonId)
+        {
+            var stratResult = new StratResult
+            {
+                CourseId = courseId,
+                StudentId = member.StudentId,
+                WorkGroupId = workGroupId,
+                ModifiedById = loggedInPersonId,
+                ModifiedDate = DateTime.Now,
+                StratCummScore = decimal.Round(member.StratTable.Select(strat =>
+                {
+                    var multipler = 1 - (strat.Position - 1) * stratScoreInterval;
+                    return multipler * strat.Count;
+                }).Sum(), 4)
+            };
+
+            return stratResult;
+        }
+
+        internal static SpResult CreateSpResultForMember(PubWgMember member, int countOfGrp, int courseId, int workGroupId, int? instrumentId)
+        {
+            //var peerCount = countOfGrp - 1;
+            var resultScore = ((decimal)member.SpResponseTotalScore / (member.CountSpResponses * 6)) * 100;
+            var spResult = new SpResult
+            {
+                CourseId = courseId,
+                WorkGroupId = workGroupId,
+                StudentId = member.StudentId,
+                AssignedInstrumentId = instrumentId,
+                CompositeScore = (int)resultScore,
+                BreakOut = new SpResultBreakOut
+                {
+                    NotDisplay = member.BreakOut.NotDisplayed,
+                    IneffA = member.BreakOut.IneffA,
+                    IneffU = member.BreakOut.IneffU,
+                    EffA = member.BreakOut.EffA,
+                    EffU = member.BreakOut.EffU,
+                    HighEffA = member.BreakOut.HighEffA,
+                    HighEffU = member.BreakOut.HighEffU
+                },
+                MpAssessResult = ConvertScoreToOutcome((int)resultScore),
+            };
+
+            return spResult;
         }
 
         private static string ConvertScoreToOutcome(int avgCompositeScore)
@@ -213,15 +214,17 @@ namespace Ecat.Business.Guards
             return avgCompositeScore <= MpSpResultScore.He ? MpAssessResult.He : "Out of Range";
         }
 
-        private static IEnumerable<PubWg> GetPublishingWgData(IEnumerable<int> wgIds, EFContextProvider<EcatContext> efCtx)
+        private static IEnumerable<PubWg> GetPublishingWgData(IEnumerable<int> wgIds,
+            EFContextProvider<EcatContext> efCtx)
         {
             var ids = wgIds.ToList();
 
             var pubWgData = (from wg in efCtx.Context.WorkGroups
-                             let prundedGm = wg.GroupMembers.Where(gm => !gm.IsDeleted)
+                let prundedGm = wg.GroupMembers.Where(gm => !gm.IsDeleted)
                 where ids.Contains(wg.WorkGroupId) &&
                       wg.MpSpStatus == MpSpStatus.Reviewed &&
-                      wg.SpComments.Where(spc => !spc.Author.IsDeleted && !spc.Recipient.IsDeleted).All(comment => comment.Flag.MpFaculty != null)
+                      wg.SpComments.Where(spc => !spc.Author.IsDeleted && !spc.Recipient.IsDeleted)
+                          .All(comment => comment.Flag.MpFaculty != null)
                 select new PubWg
                 {
                     Id = wg.WorkGroupId,
@@ -278,21 +281,30 @@ namespace Ecat.Business.Guards
                                     StratPosition = strat.StratPosition
                                 }),
                         PeersDidNotAssessMe = prundedGm.Where(peer => peer.AssessorSpResponses
-                                .Count(response => response.AssesseePersonId == gm.StudentId) == 0)
-                                .Select(peer => peer.StudentId),
+                                                                          .Count(response =>
+                                                                              response.AssesseePersonId ==
+                                                                              gm.StudentId) == 0)
+                            .Select(peer => peer.StudentId),
                         PeersIdidNotAssess = prundedGm.Where(peer => peer.AssesseeSpResponses
-                            .Count(response => response.AssessorPersonId == gm.StudentId) == 0)
+                                                                         .Count(response =>
+                                                                             response.AssessorPersonId ==
+                                                                             gm.StudentId) == 0)
                             .Select(peer => peer.StudentId),
                         PeersDidNotStratMe = prundedGm.Where(peer => peer.AssessorStratResponse
-                            .Count(strat => strat.AssesseePersonId == gm.StudentId) == 0)
+                                                                         .Count(strat =>
+                                                                             strat.AssesseePersonId == gm.StudentId) ==
+                                                                     0)
                             .Select(peer => peer.StudentId),
                         PeersIdidNotStrat = prundedGm.Where(peer => peer.AssesseeStratResponse
-                            .Count(strat => strat.AssessorPersonId == gm.StudentId) == 0)
+                                                                        .Count(strat =>
+                                                                            strat.AssessorPersonId == gm.StudentId) ==
+                                                                    0)
                             .Select(peer => peer.StudentId)
                     })
                 }).ToList();
 
-            if (!pubWgData.Any()) {
+            if (!pubWgData.Any())
+            {
                 return null;
             }
 
@@ -340,7 +352,8 @@ namespace Ecat.Business.Guards
                     }
 
                     int stratPositionCount;
-                    var hasStratPosition = assesseeStratDict[response.AssesseeId].TryGetValue(position, out stratPositionCount);
+                    var hasStratPosition = assesseeStratDict[response.AssesseeId]
+                        .TryGetValue(position, out stratPositionCount);
 
                     if (!hasStratPosition)
                     {
@@ -363,10 +376,6 @@ namespace Ecat.Business.Guards
 
             if (pubWgs == null)
             {
-                //var errorMessage = "The database did not return a publishable workgroup.";
-                //var error = infos.Select(
-                //    info => new EFEntityError(info, "Publication Error", errorMessage, "MpSpStatus"));
-                //throw new EntityErrorsException(error);
 
                 return false;
             }
@@ -383,11 +392,6 @@ namespace Ecat.Business.Guards
                 //    return true;
                 //});
 
-                //var errorMessage = "Some groups were found to be unpublishable";
-                //var error = infos.Select(
-                //    info => new EFEntityError(info, "Publication Error", errorMessage, "MpSpStatus"));
-                //throw new EntityErrorsException(error);
-
                 return false;
 
             }
@@ -395,5 +399,47 @@ namespace Ecat.Business.Guards
             return true;
 
         }
+
+        internal static bool MemberHasAllData(PubWgMember member, int totalStratPos)
+        {
+            var stratSum = member.PubStratResponses.Sum(strat => strat.StratPosition);
+            stratSum += member.SelfStratPosition;
+
+
+            if (member.PeersDidNotAssessMe.Any() || member.PeersIdidNotAssess.Any() ||
+                member.PeersDidNotStratMe.Any() ||
+                member.PeersIdidNotStrat.Any() || member.FacStratPosition == 0 || stratSum != totalStratPos)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        internal static List<PubWgMember> UpdateOriginalStratPositionForMembers(List<PubWgMember> membersStratKeeper)
+        {
+            var cummScores = new List<decimal>();
+            var oi = 1;
+
+            foreach (var member in membersStratKeeper.OrderByDescending(sk => sk.StratResult.StratCummScore))
+            {
+
+
+                if (cummScores.Contains(member.StratResult.StratCummScore) || !cummScores.Any())
+                {
+                    member.StratResult.OriginalStratPosition = oi;
+                    cummScores.Add(member.StratResult.StratCummScore);
+                    continue;
+                }
+
+                cummScores.Add(member.StratResult.StratCummScore);
+
+                oi += 1;
+                member.StratResult.OriginalStratPosition = oi;
+            }
+
+            return membersStratKeeper;
+        }
+
     }
 }
