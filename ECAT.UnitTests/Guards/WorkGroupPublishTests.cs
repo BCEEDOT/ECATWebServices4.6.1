@@ -22,6 +22,7 @@ using Ecat.Data.Models.Faculty;
 using Ecat.Data.Models.User;
 using Ecat.Data.Models.School;
 using Ecat.Data.Static;
+using Ecat.Business.Utilities;
 
 namespace Ecat.Business.Guards.Tests
 {
@@ -425,28 +426,7 @@ namespace Ecat.Business.Guards.Tests
     {
 
         [TestMethod()]
-        public void RecieveWorkGroups_AllWorkGroupsArePublishiable_ReturnTrue()
-        {
-
-            // Arrange
-
-            var workGroup = new WorkGroupPublishBuilder("Persons.csv", "SpResponses.csv", "FacStratResponses.csv", "StratResponses.csv");
-
-            var pubWorkGroup = workGroup.BuildPubWg(0, 2 , 0 , 0);
-            var pubWgs = new List<PubWg> {pubWorkGroup};
-            var svrWgIds = new List<int> {1};
-
-            // Act
-
-            var result = WorkGroupPublish.AllWorkGroupsArePublished(pubWgs, svrWgIds);
-
-            // Assert
-            result.Should().BeTrue();
-
-        }
-
-        [TestMethod()]
-        public void RecieveWorkGroups_NotAllWorkGroupsArePublishiable_ReturnFalse()
+        public void CalculateResults_NotAllWorkGroupsArePublishiable_ThrowWorkGroupPublishException()
         {
             // Arrange
 
@@ -458,224 +438,243 @@ namespace Ecat.Business.Guards.Tests
 
             // Act
 
-            var result = WorkGroupPublish.AllWorkGroupsArePublished(pubWgs, svrWgIds);
+            Action action = () => WorkGroupPublish.CalculateResults(pubWgs, svrWgIds, 1);
 
             // Assert
-            result.Should().BeFalse();
+            action.Should().Throw<WorkGroupPublishException>();
         }
 
         [TestMethod()]
-        public void RecieveWorkGroup_ReturnCorrectAssesseeStratDictionaryForGroup()
+        public void CalculateResults_MembersMissingPublishData_MemberMissingPublishDataException()
         {
             // Arrange
 
             var workGroup = new WorkGroupPublishBuilder("Persons.csv", "SpResponses.csv", "FacStratResponses.csv", "StratResponses.csv");
 
             var pubWorkGroup = workGroup.BuildPubWg(0, 2, 0, 0);
+            var pubWgs = new List<PubWg> { pubWorkGroup };
+            var svrWgIds = new List<int> { 1 };
 
             // Act
 
-            var dictionary = new Dictionary<int, Dictionary<int, int>>();
-            var correctDictionary = workGroup.BuildStratDictionary();
-
-            dictionary = WorkGroupPublish.CreateAssesseeStratDictionaryForGroup(pubWorkGroup);
-            
+            Action action = () => WorkGroupPublish.CalculateResults(pubWgs, svrWgIds, 1);
 
             // Assert
-
-            //check that the dictonary is the right length
-            dictionary.Count().Should().Be(4);
-            dictionary[1].Count().Should().Be(2);
-            dictionary[3].Count().Should().Be(2);
-            dictionary[5].Count().Should().Be(3);
-            dictionary[12].Count().Should().Be(2);
-
-            //Check that the values are correct
-            dictionary.Should().BeEquivalentTo(correctDictionary);
-
+            action.Should().Throw<MemberMissingPublishDataException>();
         }
 
-        [TestMethod]
-        public void RecievePubWgMemberandTotalStratPos_MemberIsNotMissingData_ReturnTrue()
-        {
-            // Arrange
-            var workGroup = new WorkGroupPublishBuilder("Persons.csv", "SpResponses.csv", "FacStratResponses.csv", "StratResponses.csv");
+        // [TestMethod()]
+        // public void RecieveWorkGroup_ReturnCorrectAssesseeStratDictionaryForGroup()
+        // {
+        //     // Arrange
 
-            var pubWorkGroup = workGroup.BuildPubWg(0, 0, 0, 0);
-            var groupMemberWithMissingData = pubWorkGroup.PubWgMembers.ToList()[0];
-            var countOfGrp = pubWorkGroup.PubWgMembers.Count();
-            var totalStratPos = 0;
+        //     var workGroup = new WorkGroupPublishBuilder("Persons.csv", "SpResponses.csv", "FacStratResponses.csv", "StratResponses.csv");
 
+        //     var pubWorkGroup = workGroup.BuildPubWg(0, 2, 0, 0);
 
-            for (var i = 1; i <= countOfGrp; i++)
-            {
-                totalStratPos += i;
-            }
+        //     // Act
 
-            // Act
+        //     var dictionary = new Dictionary<int, Dictionary<int, int>>();
+        //     var correctDictionary = workGroup.BuildStratDictionary();
 
-            var result = WorkGroupPublish.MemberHasAllData(groupMemberWithMissingData, totalStratPos);
-
-            // Assert
-
-            result.Should().BeTrue();
-
-        }
-
-        [TestMethod]
-        public void RecievePubWgMemberandTotalStratPos_MemberIsMissingData_ReturnFalse()
-        {
-            // Arrange
-            var workGroup = new WorkGroupPublishBuilder("Persons.csv", "SpResponses.csv", "FacStratResponses.csv", "StratResponses.csv");
-
-            var pubWorkGroup = workGroup.BuildPubWg(2, 3, 2, 2);
-            var groupMemberWithMissingData = pubWorkGroup.PubWgMembers.ToList()[0];
-            var countOfGrp = pubWorkGroup.PubWgMembers.Count();
-            var totalStratPos = 0;
+        //     dictionary = WorkGroupPublish.CreateAssesseeStratDictionaryForGroup(pubWorkGroup);
 
 
-            for (var i = 1; i <= countOfGrp; i++)
-            {
-                totalStratPos += i;
-            }
+        //     // Assert
 
-            // Act
+        //     //check that the dictonary is the right length
+        //     dictionary.Count().Should().Be(4);
+        //     dictionary[1].Count().Should().Be(2);
+        //     dictionary[3].Count().Should().Be(2);
+        //     dictionary[5].Count().Should().Be(3);
+        //     dictionary[12].Count().Should().Be(2);
 
-            var result = WorkGroupPublish.MemberHasAllData(groupMemberWithMissingData, totalStratPos);
+        //     //Check that the values are correct
+        //     dictionary.Should().BeEquivalentTo(correctDictionary);
 
-            // Assert
+        // }
 
-            result.Should().BeFalse();
+        // [TestMethod]
+        // public void RecievePubWgMemberandTotalStratPos_MemberIsNotMissingData_ReturnTrue()
+        // {
+        //     // Arrange
+        //     var workGroup = new WorkGroupPublishBuilder("Persons.csv", "SpResponses.csv", "FacStratResponses.csv", "StratResponses.csv");
 
-
-        }
-
-        [TestMethod]
-        public void RecievePubWgMemberandTotalStratPos_MemberIsMissingDataFacStrat_ReturnTrue()
-        {
-            // Arrange
-            var workGroup = new WorkGroupPublishBuilder("Persons.csv", "SpResponses.csv", "FacStratResponsesWithMissingData.csv", "StratResponses.csv");
-
-            var pubWorkGroup = workGroup.BuildPubWg(0, 0, 0, 0);
-            var groupMemberWithMissingData = pubWorkGroup.PubWgMembers.ToList()[1];
-            var countOfGrp = pubWorkGroup.PubWgMembers.Count();
-            var totalStratPos = 0;
+        //     var pubWorkGroup = workGroup.BuildPubWg(0, 0, 0, 0);
+        //     var groupMemberWithMissingData = pubWorkGroup.PubWgMembers.ToList()[0];
+        //     var countOfGrp = pubWorkGroup.PubWgMembers.Count();
+        //     var totalStratPos = 0;
 
 
-            for (var i = 1; i <= countOfGrp; i++)
-            {
-                totalStratPos += i;
-            }
+        //     for (var i = 1; i <= countOfGrp; i++)
+        //     {
+        //         totalStratPos += i;
+        //     }
 
-            // Act
+        //     // Act
 
-            var result = WorkGroupPublish.MemberHasAllData(groupMemberWithMissingData, totalStratPos);
+        //     var result = WorkGroupPublish.MemberHasAllData(groupMemberWithMissingData, totalStratPos);
 
-            // Assert
+        //     // Assert
 
-            result.Should().BeTrue();
+        //     result.Should().BeTrue();
 
+        // }
 
-        }
+        // [TestMethod]
+        // public void RecievePubWgMemberandTotalStratPos_MemberIsMissingData_ReturnFalse()
+        // {
+        //     // Arrange
+        //     var workGroup = new WorkGroupPublishBuilder("Persons.csv", "SpResponses.csv", "FacStratResponses.csv", "StratResponses.csv");
 
-       [TestMethod]
-        //internal static StratResult CreateStratResultForMember(PubWgMember member, decimal stratScoreInterval,  int courseId, int workGroupId, int loggedInPersonId)
-        public void CreateStratResultForMember_ReturnCorrectStratResultForMember()
-        {
-            //Arrange
-            var workGroup = new WorkGroupPublishBuilder("Persons.csv", "SpResponses.csv",
-                "FacStratResponsesWithMissingData.csv", "StratResponses.csv");
-            var pubWorkGroup = workGroup.BuildPubWg(0, 0, 0, 0);
-            var members = pubWorkGroup.PubWgMembers;
-            var stratDictionary = workGroup.BuildStratDictionary();
-
-            var stratScoreInterval = 1m / members.Count();
-            stratScoreInterval = decimal.Round(stratScoreInterval, 4);
-
-            foreach (var gm in members)
-            {
-                var myResponses = stratDictionary[gm.StudentId];
-                gm.StratTable = myResponses.Select(mr => new PubWgStratTable
-                {
-                    Position = mr.Key,
-                    Count = mr.Value
-                });
-            }
-
-            //Act
-
-            foreach (var pubWgMember in members)
-            {
-                var stratResult = WorkGroupPublish.CreateStratResultForMember(pubWgMember, stratScoreInterval, 1, 1, 1);
-
-                pubWgMember.StratResult = stratResult;
-            }
-
-            //Assert
-        }
-
-        [TestMethod]
-        //internal static SpResult CreateSpResultForMember(PubWgMember member, int countOfGrp, int courseId, int workGroupId, int? instrumentId)
-        public void CreateSpResultForMember_ReturnCorrectSpResultForMember()
-        {
-            //Arrange
-
-            //Act
-
-            //Assert
-        }
-
-        [TestMethod]
-        //internal static PubWgMember CalculateAwardedScoreForMember(PubWgMember member, PubWg wg, decimal spInterval, decimal facInterval, int fi )
-        public void CalculateAwardedScoreForMember_ReturnCorrectScoreForMember()
-        {
-            //Arrange
-            //var workGroup = new WorkGroupPublishBuilder("Persons.csv", "SpResponses.csv", "FacStratResponses.csv", "StratResponses.csv");
-            //var pubWorkGroup = workGroup.BuildPubWg(0, 0, 0, 0);
-            //var membersStratKeeper = new List<PubWgMember>();
-
-            //var groupMembers = pubWorkGroup.PubWgMembers;
-
-            //foreach (var pubWgMember in groupMembers)
-            //{
-            //    var stratResult = WorkGroupPublish.CreateStratResultForMember(pubWgMember, stratScoreInterval, wg.CourseId, wg.Id, loggedInPersonId);
-
-            //    member.StratResult = stratResult;
-            //    membersStratKeeper.Add(member)
-
-            //}
+        //     var pubWorkGroup = workGroup.BuildPubWg(2, 3, 2, 2);
+        //     var groupMemberWithMissingData = pubWorkGroup.PubWgMembers.ToList()[0];
+        //     var countOfGrp = pubWorkGroup.PubWgMembers.Count();
+        //     var totalStratPos = 0;
 
 
+        //     for (var i = 1; i <= countOfGrp; i++)
+        //     {
+        //         totalStratPos += i;
+        //     }
 
-            //var fi = 0;
+        //     // Act
 
-            //var correctFacStratList = new Dictionary<int, decimal>
-            //{
-            //    { 1, 10},
-            //    { 3, 9},
-            //    { 5, 8},
-            //    { 12, 7}
-            //};
+        //     var result = WorkGroupPublish.MemberHasAllData(groupMemberWithMissingData, totalStratPos);
 
-            ////Act
+        //     // Assert
+
+        //     result.Should().BeFalse();
 
 
+        // }
 
-            //foreach (var pubWgMember in groupMembers)
-            //{
-            //    //WgSpTopStrat = 10
-            //    //WgFacTopStrat = 10
-            //    WorkGroupPublish.CalculateAwardedScoreForMember(pubWgMember, pubWorkGroup, 1, 1, fi);
+        // [TestMethod]
+        // public void RecievePubWgMemberandTotalStratPos_MemberIsMissingDataFacStrat_ReturnTrue()
+        // {
+        //     // Arrange
+        //     var workGroup = new WorkGroupPublishBuilder("Persons.csv", "SpResponses.csv", "FacStratResponsesWithMissingData.csv", "StratResponses.csv");
 
-            //    fi += 1;
-            //}
+        //     var pubWorkGroup = workGroup.BuildPubWg(0, 0, 0, 0);
+        //     var groupMemberWithMissingData = pubWorkGroup.PubWgMembers.ToList()[1];
+        //     var countOfGrp = pubWorkGroup.PubWgMembers.Count();
+        //     var totalStratPos = 0;
 
-            ////Assert
-            //foreach (var pubWgMember in groupMembers)
-            //{
-            //    pubWgMember.StratResult.FacStratAwardedScore.Should().Be(correctFacStratList[pubWgMember.StudentId]);
-            //}
-        }
+
+        //     for (var i = 1; i <= countOfGrp; i++)
+        //     {
+        //         totalStratPos += i;
+        //     }
+
+        //     // Act
+
+        //     var result = WorkGroupPublish.MemberHasAllData(groupMemberWithMissingData, totalStratPos);
+
+        //     // Assert
+
+        //     result.Should().BeTrue();
+
+
+        // }
+
+        //[TestMethod]
+        // //internal static StratResult CreateStratResultForMember(PubWgMember member, decimal stratScoreInterval,  int courseId, int workGroupId, int loggedInPersonId)
+        // public void CreateStratResultForMember_ReturnCorrectStratResultForMember()
+        // {
+        //     //Arrange
+        //     var workGroup = new WorkGroupPublishBuilder("Persons.csv", "SpResponses.csv",
+        //         "FacStratResponsesWithMissingData.csv", "StratResponses.csv");
+        //     var pubWorkGroup = workGroup.BuildPubWg(0, 0, 0, 0);
+        //     var members = pubWorkGroup.PubWgMembers;
+        //     var stratDictionary = workGroup.BuildStratDictionary();
+
+        //     var stratScoreInterval = 1m / members.Count();
+        //     stratScoreInterval = decimal.Round(stratScoreInterval, 4);
+
+        //     foreach (var gm in members)
+        //     {
+        //         var myResponses = stratDictionary[gm.StudentId];
+        //         gm.StratTable = myResponses.Select(mr => new PubWgStratTable
+        //         {
+        //             Position = mr.Key,
+        //             Count = mr.Value
+        //         });
+        //     }
+
+        //     //Act
+
+        //     foreach (var pubWgMember in members)
+        //     {
+        //         var stratResult = WorkGroupPublish.CreateStratResultForMember(pubWgMember, stratScoreInterval, 1, 1, 1);
+
+        //         pubWgMember.StratResult = stratResult;
+        //     }
+
+        //     //Assert
+        // }
+
+        // [TestMethod]
+        // //internal static SpResult CreateSpResultForMember(PubWgMember member, int countOfGrp, int courseId, int workGroupId, int? instrumentId)
+        // public void CreateSpResultForMember_ReturnCorrectSpResultForMember()
+        // {
+        //     //Arrange
+
+        //     //Act
+
+        //     //Assert
+        // }
+
+        // [TestMethod]
+        // //internal static PubWgMember CalculateAwardedScoreForMember(PubWgMember member, PubWg wg, decimal spInterval, decimal facInterval, int fi )
+        // public void CalculateAwardedScoreForMember_ReturnCorrectScoreForMember()
+        // {
+        //     //Arrange
+        //     //var workGroup = new WorkGroupPublishBuilder("Persons.csv", "SpResponses.csv", "FacStratResponses.csv", "StratResponses.csv");
+        //     //var pubWorkGroup = workGroup.BuildPubWg(0, 0, 0, 0);
+        //     //var membersStratKeeper = new List<PubWgMember>();
+
+        //     //var groupMembers = pubWorkGroup.PubWgMembers;
+
+        //     //foreach (var pubWgMember in groupMembers)
+        //     //{
+        //     //    var stratResult = WorkGroupPublish.CreateStratResultForMember(pubWgMember, stratScoreInterval, wg.CourseId, wg.Id, loggedInPersonId);
+
+        //     //    member.StratResult = stratResult;
+        //     //    membersStratKeeper.Add(member)
+
+        //     //}
+
+
+
+        //     //var fi = 0;
+
+        //     //var correctFacStratList = new Dictionary<int, decimal>
+        //     //{
+        //     //    { 1, 10},
+        //     //    { 3, 9},
+        //     //    { 5, 8},
+        //     //    { 12, 7}
+        //     //};
+
+        //     ////Act
+
+
+
+        //     //foreach (var pubWgMember in groupMembers)
+        //     //{
+        //     //    //WgSpTopStrat = 10
+        //     //    //WgFacTopStrat = 10
+        //     //    WorkGroupPublish.CalculateAwardedScoreForMember(pubWgMember, pubWorkGroup, 1, 1, fi);
+
+        //     //    fi += 1;
+        //     //}
+
+        //     ////Assert
+        //     //foreach (var pubWgMember in groupMembers)
+        //     //{
+        //     //    pubWgMember.StratResult.FacStratAwardedScore.Should().Be(correctFacStratList[pubWgMember.StudentId]);
+        //     //}
+        // }
 
     }
 }

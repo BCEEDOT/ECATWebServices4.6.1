@@ -121,9 +121,11 @@
     </Compile>
     <Compile Include="Utilities\EmailValidator.cs" />
     <Compile Include="Utilities\Hasher.cs" />
+    <Compile Include="Utilities\MemberMissingPublishDataException.cs" />
     <Compile Include="Utilities\Retrier.cs" />
     <Compile Include="Utilities\SaveMapGlobalExtensions.cs" />
     <Compile Include="Utilities\UserExceptions.cs" />
+    <Compile Include="Utilities\WorkGroupPublishException.cs" />
     <Compile Include="Utilities\WsSecurityBehavior.cs" />
   </ItemGroup>
   <ItemGroup>

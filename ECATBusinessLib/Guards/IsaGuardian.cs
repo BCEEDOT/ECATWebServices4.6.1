@@ -15,6 +15,7 @@ using Ecat.Data.Static;
 
 namespace Ecat.Business.Guards
 {
+    using Data.Models.Student;
     using SaveMap = Dictionary<Type, List<EntityInfo>>;
     public class IsaGuard
     {
@@ -348,11 +349,61 @@ namespace Ecat.Business.Guards
             var svrWgIds = publishingWgs.Select(wg => wg.WorkGroupId);
             var grpsWithMemsIds = ctxManager.Context.WorkGroups.Where(grp => svrWgIds.Contains(grp.WorkGroupId) && grp.GroupMembers.Where(mem => !mem.IsDeleted).Count() > 0).Select(wg => wg.WorkGroupId);
 
-            var publishResultMap = WorkGroupPublish.Publish(wgSaveMap, grpsWithMemsIds, loggedInUser.PersonId, ctxManager);
+            //var publishResultMap = WorkGroupPublish.Publish(wgSaveMap, grpsWithMemsIds, loggedInUser.PersonId, ctxManager);
 
+            //Why is this commented out? It is not commented out the FacultyGuardian
             //wgSaveMap.MergeMap(publishResultMap);
 
-            return publishResultMap;
+            //return publishResultMap;
+
+
+
+
+
+            return wgSaveMap;
+        }
+
+        private SaveMap ProcessEntitiesInPublishResults(IEnumerable<PubWg> pubWgs, EFContextProvider<EcatContext> ctxProvider, SaveMap wgSaveMap)
+        {
+            var tSpResult = typeof(SpResult);
+            var tStratResult = typeof(StratResult);
+            //var tWg = typeof(WorkGroup);
+
+            foreach (var workGroup in pubWgs)
+            {
+                foreach (var member in workGroup.PubWgMembers)
+                {
+                    var resultInfo = ctxProvider.CreateEntityInfo(member.SpResult,
+                        member.HasSpResult ? Breeze.ContextProvider.EntityState.Modified : Breeze.ContextProvider.EntityState.Added);
+
+                    resultInfo.ForceUpdate = member.HasSpResult;
+
+                    if (!wgSaveMap.ContainsKey(tSpResult))
+                    {
+                        wgSaveMap[tSpResult] = new List<EntityInfo> { resultInfo };
+                    }
+                    else
+                    {
+                        wgSaveMap[tSpResult].Add(resultInfo);
+                    }
+
+                    var info = ctxProvider.CreateEntityInfo(member.StratResult,
+                        member.HasStratResult ? Breeze.ContextProvider.EntityState.Modified : Breeze.ContextProvider.EntityState.Added);
+                    info.ForceUpdate = member.HasStratResult;
+
+                    if (!wgSaveMap.ContainsKey(tStratResult))
+                    {
+                        wgSaveMap[tStratResult] = new List<EntityInfo> { info };
+                    }
+                    else
+                    {
+                        wgSaveMap[tStratResult].Add(info);
+                    }
+
+                }
+            }
+
+            return wgSaveMap;
         }
     }
 }

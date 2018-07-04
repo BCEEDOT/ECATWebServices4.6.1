@@ -486,7 +486,7 @@ namespace Ecat.DevOps
 
                     using (var cmd = new SqlCommand())
                     {
-                        using (var conn = new SqlConnection("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=ecat;Integrated Security=True;Connect Timeout=30;Encrypt=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"))
+                        using (var conn = new SqlConnection("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=ecatcanvas;Integrated Security=True;Connect Timeout=30;Encrypt=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"))
                         {
                             //assign connection string and open connection
                             cmd.Connection = conn;
@@ -737,7 +737,7 @@ namespace Ecat.DevOps
 
                         using (var cmd = new SqlCommand())
                         {
-                            using (var conn = new SqlConnection("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=ecat3;Integrated Security=True;Connect Timeout=30;Encrypt=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"))
+                            using (var conn = new SqlConnection("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=ecatcanvas;Integrated Security=True;Connect Timeout=30;Encrypt=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"))
                             //using (var conn = new SqlConnection("Data Source=tcp:epme-tech-intergration.database.windows.net,1433;Initial Catalog=ecat;User ID=epmeTechAdmin;Password=P)O(i8u7p0o9I*U&;Integrated Security=False;Connect Timeout=60;Encrypt=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"))
                             {
                                 //assign connection string and open connection

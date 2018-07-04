@@ -23,6 +23,7 @@ using Ecat.Business.Utilities;
 
 namespace Ecat.Business.Guards
 {
+    using Data.Models.Common;
     using SaveMap = Dictionary<Type, List<EntityInfo>>;
     public class FacultyGuardian
     {
@@ -97,48 +98,6 @@ namespace Ecat.Business.Guards
             return saveMap;
         }
 
-        //moved to MonitoredGuard
-        //private void ProcessCourseMonitoredMaps(List<EntityInfo> infos)
-        //{
-        //    var courseMonitorEntities = infos.Select(info => info.Entity).OfType<ICourseMonitored>();
-        //    var courseIds = courseMonitorEntities.Select(cme => cme.CourseId);
-
-        //    var pubCrseId = ctxManager.Context.Courses
-        //        .Where(crse => courseIds.Contains(crse.Id) && crse.GradReportPublished)
-        //        .Select(crse => crse.Id);
-
-        //    if (!pubCrseId.Any()) return;
-
-        //    var errors = from info in infos
-        //                 let crseEntity = (ICourseMonitored)info.Entity
-        //                 where pubCrseId.Contains(crseEntity.CourseId)
-        //                 select new EFEntityError(info, "Course Error Validation",
-        //                             "There was a problem saving the requested items", "Course");
-
-        //    throw new EntityErrorsException(errors);
-        //}
-
-        //private void ProcessWorkGroupMonitoredMaps(List<EntityInfo> infos)
-        //{
-        //    var wgMonitorEntities = infos.Select(info => info.Entity).OfType<IWorkGroupMonitored>();
-        //    var wgIds = wgMonitorEntities.Select(wgme => wgme.WorkGroupId);
-
-        //    var pubWgIds = ctxManager.Context.WorkGroups
-        //        .Where(wg => wgIds.Contains(wg.WorkGroupId) && wg.MpSpStatus == MpSpStatus.Published)
-        //        .Select(wg => wg.WorkGroupId);
-
-        //    if (!pubWgIds.Any()) return;
-
-        //    var errors = from info in infos
-        //        let wgEntity = (IWorkGroupMonitored) info.Entity
-        //        where pubWgIds.Contains(wgEntity.WorkGroupId)
-        //        select new EFEntityError(info, "WorkGroup Error Validation",
-        //                    "There was a problem saving the requested items", "WorkGroup");
-
-              
-        //    throw new EntityErrorsException(errors);
-        //}
-
         private SaveMap ProcessWorkGroup(List<EntityInfo> workGroupInfos)
         {
 
@@ -152,9 +111,40 @@ namespace Ecat.Business.Guards
 
             if (!publishingWgs.Any()) return wgSaveMap;
 
-
             var svrWgIds = publishingWgs.Select(wg => wg.WorkGroupId);
-            var publishResultMap = WorkGroupPublish.Publish(wgSaveMap, svrWgIds, loggedInUser.PersonId, ctxManager);
+
+            //First Call and get all the data needed to run publish
+
+            //Second call Publish to create the SpResults and StratResults data
+
+            //Third go through SpResults and StratResults and create or modify the entities
+
+            var pubWgs = WorkGroupPublish.GetPublishingWgData(svrWgIds, ctxManager);
+
+            var infos = wgSaveMap.Single(map => map.Key == _tWg).Value;
+            IEnumerable<PubWg> publishResults = null;
+
+            try
+            {
+                publishResults = WorkGroupPublish.CalculateResults(pubWgs, svrWgIds, loggedInUser.PersonId);
+            }
+
+            catch (WorkGroupPublishException exception)
+
+            {
+                var error = infos.Select(
+                    info => new EFEntityError(info, "Publication Error", exception.Message, "MpSpStatus"));
+                throw new EntityErrorsException(error);
+            }
+
+            catch (MemberMissingPublishDataException exception)
+            {
+                var error = infos.Select(
+                    info => new EFEntityError(info, "Publication Error", exception.Message, "MpSpStatus"));
+                throw new EntityErrorsException(error);
+            }
+
+            var publishResultMap = ProcessEntitiesInPublishResults(publishResults, ctxManager, wgSaveMap);
 
             wgSaveMap.MergeMap(publishResultMap);
 
@@ -184,6 +174,51 @@ namespace Ecat.Business.Guards
                 comment.FacultyPersonId = loggedInUser.PersonId;
             }
         }
+
+        private SaveMap ProcessEntitiesInPublishResults(IEnumerable<PubWg> pubWgs, EFContextProvider<EcatContext> ctxProvider, SaveMap wgSaveMap)
+        {
+            var tSpResult = typeof(SpResult);
+            var tStratResult = typeof(StratResult);
+            //var tWg = typeof(WorkGroup);
+
+            foreach (var workGroup in pubWgs)
+            {
+                foreach (var member in workGroup.PubWgMembers)
+                {
+                    var resultInfo = ctxProvider.CreateEntityInfo(member.SpResult,
+                        member.HasSpResult ? Breeze.ContextProvider.EntityState.Modified : Breeze.ContextProvider.EntityState.Added);
+
+                    resultInfo.ForceUpdate = member.HasSpResult;
+
+                    if (!wgSaveMap.ContainsKey(tSpResult))
+                    {
+                        wgSaveMap[tSpResult] = new List<EntityInfo> { resultInfo };
+                    }
+                    else
+                    {
+                        wgSaveMap[tSpResult].Add(resultInfo);
+                    }
+
+                    var info = ctxProvider.CreateEntityInfo(member.StratResult,
+                        member.HasStratResult ? Breeze.ContextProvider.EntityState.Modified : Breeze.ContextProvider.EntityState.Added);
+                    info.ForceUpdate = member.HasStratResult;
+
+                    if (!wgSaveMap.ContainsKey(tStratResult))
+                    {
+                        wgSaveMap[tStratResult] = new List<EntityInfo> { info };
+                    }
+                    else
+                    {
+                        wgSaveMap[tStratResult].Add(info);
+                    }
+
+                }
+            }
+
+            return wgSaveMap;
+        }
+
+        
 
     }
 }

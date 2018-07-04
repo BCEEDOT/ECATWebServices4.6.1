@@ -31,6 +31,7 @@ namespace Ecat.Data.Models.Common
         public bool HasSpResult { get; set; }
         public bool HasStratResult { get; set; }
         public int CountSpResponses { get; set; }
+        public SpResult SpResult { get; set; }
         public StratResult StratResult { get; set; }
         public PubWgBreakOut BreakOut { get;  set;}
         public IEnumerable<int> PeersDidNotAssessMe { get; set; }

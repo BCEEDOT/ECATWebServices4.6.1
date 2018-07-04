@@ -19,28 +19,30 @@ using Ecat.Data.Validation;
 
 namespace Ecat.Business.Guards
 {
+    using Utilities;
     using SaveMap = Dictionary<Type, List<EntityInfo>>;
 
     public static class WorkGroupPublish
     {
-        private static readonly Type tSpResult = typeof(SpResult);
-        private static readonly Type tStratResult = typeof(StratResult);
-        private static readonly Type tWg = typeof(WorkGroup);
+        //private static readonly Type tSpResult = typeof(SpResult);
+        //private static readonly Type tStratResult = typeof(StratResult);
+        //private static readonly Type tWg = typeof(WorkGroup);
 
-        public static SaveMap Publish(SaveMap wgSaveMap, IEnumerable<int> svrWgIds, int loggedInPersonId,
-            EFContextProvider<EcatContext> ctxProvider)
+        public static IEnumerable<PubWg> CalculateResults(IEnumerable<PubWg> pubWgs, IEnumerable<int> svrWgIds, int loggedInPersonId)
         {
-            var infos = wgSaveMap.Single(map => map.Key == tWg).Value;
+            //var infos = wgSaveMap.Single(map => map.Key == tWg).Value;
 
             //Database call
-            var pubWgs = GetPublishingWgData(svrWgIds, ctxProvider);
+            //var pubWgs = GetPublishingWgData(svrWgIds, ctxProvider);
 
             if (!AllWorkGroupsArePublished(pubWgs, svrWgIds))
             {
                 var errorMessage = "Some groups were found to be unpublishable";
-                var error = infos.Select(
-                    info => new EFEntityError(info, "Publication Error", errorMessage, "MpSpStatus"));
-                throw new EntityErrorsException(error);
+                //var error = infos.Select(
+                //    info => new EFEntityError(info, "Publication Error", errorMessage, "MpSpStatus"));
+                //throw new EntityErrorsException(error);
+
+                throw new WorkGroupPublishException(errorMessage);
 
             }
 
@@ -67,27 +69,30 @@ namespace Ecat.Business.Guards
                         var errorMessage =
                             $"There was a problem validating necessary information . Problem Flags Are: [Them => Me] NA: !{member.PeersDidNotAssessMe.Count()}, NS: {member.PeersDidNotStratMe.Any()} | [Me => Them] NA: {member.PeersIdidNotAssess.Count()}, NS: {member.PeersIdidNotStrat.Any()} | FacStrat: {member.FacStratPosition}";
 
-                        var error = infos.Select(
-                            info => new EFEntityError(info, "Publication Error", errorMessage, "MpSpStatus"));
-                        throw new EntityErrorsException(error);
+                        //var error = infos.Select(
+                        //    info => new EFEntityError(info, "Publication Error", errorMessage, "MpSpStatus"));
+                        //throw new EntityErrorsException(error);
+
+                        throw new MemberMissingPublishDataException(errorMessage);
 
                     }
 
                     var spResult = CreateSpResultForMember(member, countOfGrp, wg.CourseId, wg.Id, wg.InstrumentId);
+                    member.SpResult = spResult;
 
-                    var resultInfo = ctxProvider.CreateEntityInfo(spResult,
-                        member.HasSpResult ? EntityState.Modified : EntityState.Added);
+                    //var resultInfo = ctxProvider.CreateEntityInfo(spResult,
+                    //    member.HasSpResult ? EntityState.Modified : EntityState.Added);
 
-                    resultInfo.ForceUpdate = member.HasSpResult;
+                    //resultInfo.ForceUpdate = member.HasSpResult;
 
-                    if (!wgSaveMap.ContainsKey(tSpResult))
-                    {
-                        wgSaveMap[tSpResult] = new List<EntityInfo> {resultInfo};
-                    }
-                    else
-                    {
-                        wgSaveMap[tSpResult].Add(resultInfo);
-                    }
+                    //if (!wgSaveMap.ContainsKey(tSpResult))
+                    //{
+                    //    wgSaveMap[tSpResult] = new List<EntityInfo> {resultInfo};
+                    //}
+                    //else
+                    //{
+                    //    wgSaveMap[tSpResult].Add(resultInfo);
+                    //}
 
                     
                     var stratResult = CreateStratResultForMember(member, stratScoreInterval, wg.CourseId, wg.Id, loggedInPersonId);
@@ -111,24 +116,24 @@ namespace Ecat.Business.Guards
 
                     var updatedMember = CalculateAwardedScoreForMember(member, wg, spInterval, facInterval, fi);
 
-                    var info = ctxProvider.CreateEntityInfo(updatedMember.StratResult,
-                        updatedMember.HasStratResult ? EntityState.Modified : EntityState.Added);
-                    info.ForceUpdate = updatedMember.HasStratResult;
+                    //var info = ctxProvider.CreateEntityInfo(updatedMember.StratResult,
+                    //    updatedMember.HasStratResult ? EntityState.Modified : EntityState.Added);
+                    //info.ForceUpdate = updatedMember.HasStratResult;
 
-                    if (!wgSaveMap.ContainsKey(tStratResult))
-                    {
-                        wgSaveMap[tStratResult] = new List<EntityInfo> {info};
-                    }
-                    else
-                    {
-                        wgSaveMap[tStratResult].Add(info);
-                    }
+                    //if (!wgSaveMap.ContainsKey(tStratResult))
+                    //{
+                    //    wgSaveMap[tStratResult] = new List<EntityInfo> {info};
+                    //}
+                    //else
+                    //{
+                    //    wgSaveMap[tStratResult].Add(info);
+                    //}
 
                     fi += 1;
                 }
             }
 
-            return wgSaveMap;
+            return pubWgs;
         }
 
         internal static PubWgMember CalculateAwardedScoreForMember(PubWgMember member, PubWg wg, decimal spInterval, decimal facInterval, int fi )
@@ -214,7 +219,7 @@ namespace Ecat.Business.Guards
             return avgCompositeScore <= MpSpResultScore.He ? MpAssessResult.He : "Out of Range";
         }
 
-        private static IEnumerable<PubWg> GetPublishingWgData(IEnumerable<int> wgIds,
+        public static IEnumerable<PubWg> GetPublishingWgData(IEnumerable<int> wgIds,
             EFContextProvider<EcatContext> efCtx)
         {
             var ids = wgIds.ToList();
