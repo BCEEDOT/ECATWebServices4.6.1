@@ -136,6 +136,7 @@
     <None Include="DataSets\SpResponsesWithMissingData.csv" />
     <None Include="DataSets\StratResponses.csv" />
     <None Include="DataSets\StratResponsesWithMissingData.csv" />
+    <None Include="DataSets\StratResults.csv" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

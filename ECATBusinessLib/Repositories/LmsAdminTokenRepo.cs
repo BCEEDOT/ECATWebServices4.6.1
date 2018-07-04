@@ -32,7 +32,7 @@ namespace Ecat.Business.Repositories
         //TODO: Update once we have production Canvas
         private readonly string canvasTokenUrl = "https://lms.stag.af.edu/login/oauth2/token";
         private readonly string clientId = "10000000000036";
-        private readonly string clientSecret = "***REMOVED***";
+        private readonly string clientSecret = "54654654654";
         //private readonly string redirectUri = "https://augateway.maxwell.af.mil";
         private readonly string redirectUri = "https://localhost:4200";
 

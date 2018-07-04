@@ -21,7 +21,9 @@ namespace Ecat.Data.Models.Student
         public int StudentId { get; set; }
         public int WorkGroupId { get; set; }
 
+        //Final Strat without sort by instructor strat
         public int OriginalStratPosition { get; set; }
+        //Final Strat with sort by instructor strat
         public int FinalStratPosition { get; set; }
         public decimal StratCummScore { get; set; }
         public decimal StudStratAwardedScore { get; set; }

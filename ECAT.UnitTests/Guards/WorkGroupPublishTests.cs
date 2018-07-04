@@ -49,6 +49,29 @@ namespace Ecat.Business.Guards.Tests
         }
     }
 
+    public class CsvStratResult : StratResult
+    {
+        public static StratResult FromCsv(string line)
+        {
+
+            var split = line.Split(',');
+
+            StratResult csvStratResult = new StratResult
+            {
+                StudentId = int.Parse(split[0]),
+                CourseId = int.Parse(split[1]),
+                WorkGroupId = int.Parse(split[2]),
+                OriginalStratPosition = int.Parse(split[3]),
+                FinalStratPosition = int.Parse(split[4]),
+                StratCummScore = decimal.Parse(split[5]),
+                StudStratAwardedScore = decimal.Parse(split[6]),
+                FacStratAwardedScore = decimal.Parse(split[7])
+            };
+
+            return csvStratResult;
+        }
+    }
+
     public class CsvStratResponse : StratResponse
     {
         public static StratResponse FromCsv(string line)
@@ -278,6 +301,11 @@ namespace Ecat.Business.Guards.Tests
             return workGroups;
         }
 
+        public List<StratResult> GetCorrectResults(string fileName) {
+            return CreateStratResults(fileName);     
+            
+        }
+
         private PubWgMember CreatePubWgMember(Person person, int peersDidNotAssessMe, int peersIdidNotAssess, int peersDidNotStratMe, int peersIdidNotStrat)
         {
 
@@ -413,6 +441,13 @@ namespace Ecat.Business.Guards.Tests
 
         }
 
+        private List<StratResult> CreateStratResults(string fileName) {
+            var csvStratResults = File.ReadAllLines(GetPath(fileName))
+                .Select(CsvStratResult.FromCsv).ToList();
+
+            return csvStratResults;
+        }
+
         private static string GetPath(string fileName) {
 
             var currentDirectory = Directory.GetCurrentDirectory();
@@ -461,6 +496,54 @@ namespace Ecat.Business.Guards.Tests
 
             // Assert
             action.Should().Throw<MemberMissingPublishDataException>();
+        }
+
+        [TestMethod()]
+        public void CalculateResults_ReturnCorrectScores()
+        {
+            // Arrange
+
+            var workGroup = new WorkGroupPublishBuilder("Persons.csv", "SpResponses.csv", "FacStratResponses.csv", "StratResponses.csv");
+
+            var pubWorkGroup = workGroup.BuildPubWg(0, 0, 0, 0);
+            var correctResults = workGroup.GetCorrectResults("StratResults.csv");
+            var stratDictionary = workGroup.BuildStratDictionary();
+            var pubWgs = new List<PubWg> { pubWorkGroup };
+            var svrWgIds = new List<int> { 1 };
+
+            foreach (var gm in pubWorkGroup.PubWgMembers)
+            {
+                var myResponses = stratDictionary[gm.StudentId];
+                gm.StratTable = myResponses.Select(mr => new PubWgStratTable
+                {
+                    Position = mr.Key,
+                    Count = mr.Value
+                });
+            }
+
+            // Act
+
+            var results =  WorkGroupPublish.CalculateResults(pubWgs, svrWgIds, 1);
+
+            // Assert
+
+            foreach (var result in results)
+            {
+                foreach (var pubWgMember in result.PubWgMembers)
+                {
+                    pubWgMember.StratResult.OriginalStratPosition.Should()
+                        .Be(correctResults.Where(stratResult => stratResult.StudentId == pubWgMember.StudentId).FirstOrDefault().OriginalStratPosition);
+                    pubWgMember.StratResult.FinalStratPosition.Should()
+                        .Be(correctResults.Where(stratResult => stratResult.StudentId == pubWgMember.StudentId).FirstOrDefault().FinalStratPosition);
+                    pubWgMember.StratResult.StratCummScore.Should()
+                        .Be(correctResults.Where(stratResult => stratResult.StudentId == pubWgMember.StudentId).FirstOrDefault().StratCummScore);
+                    pubWgMember.StratResult.StudStratAwardedScore.Should()
+                        .Be(correctResults.Where(stratResult => stratResult.StudentId == pubWgMember.StudentId).FirstOrDefault().StudStratAwardedScore);
+                    pubWgMember.StratResult.FacStratAwardedScore.Should()
+                        .Be(correctResults.Where(stratResult => stratResult.StudentId == pubWgMember.StudentId).FirstOrDefault().FacStratAwardedScore);
+                }
+            }
+            
         }
 
         // [TestMethod()]
