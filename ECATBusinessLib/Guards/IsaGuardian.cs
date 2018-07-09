@@ -347,7 +347,10 @@ namespace Ecat.Business.Guards
 
 
             var svrWgIds = publishingWgs.Select(wg => wg.WorkGroupId);
-            var grpsWithMemsIds = ctxManager.Context.WorkGroups.Where(grp => svrWgIds.Contains(grp.WorkGroupId) && grp.GroupMembers.Where(mem => !mem.IsDeleted).Count() > 0).Select(wg => wg.WorkGroupId);
+            //On ISA screen there will be groups that have publish status but no actual data. (For empty groups)
+            var grpsWithMemsIds = ctxManager.Context.WorkGroups.Where(grp => svrWgIds
+                                     .Contains(grp.WorkGroupId) && grp.GroupMembers.Where(mem => !mem.IsDeleted).Count() > 0)
+                                     .Select(wg => wg.WorkGroupId);
 
             //var publishResultMap = WorkGroupPublish.Publish(wgSaveMap, grpsWithMemsIds, loggedInUser.PersonId, ctxManager);
 
@@ -356,11 +359,39 @@ namespace Ecat.Business.Guards
 
             //return publishResultMap;
 
+            var pubWgs = WorkGroupPublish.GetPublishingWgData(grpsWithMemsIds, ctxManager);
 
+            var infos = wgSaveMap.Single(map => map.Key == tWg).Value;
+            IEnumerable<PubWg> publishResults = null;
 
+            try
+            {
+                publishResults = WorkGroupPublish.CalculateResults(pubWgs, svrWgIds, loggedInUser.PersonId);
+            }
 
+            catch (WorkGroupPublishException exception)
 
-            return wgSaveMap;
+            {
+                var error = infos.Select(
+                    info => new EFEntityError(info, "Publication Error", exception.Message, "MpSpStatus"));
+                throw new EntityErrorsException(error);
+            }
+
+            catch (MemberMissingPublishDataException exception)
+            {
+                var error = infos.Select(
+                    info => new EFEntityError(info, "Publication Error", exception.Message, "MpSpStatus"));
+                throw new EntityErrorsException(error);
+            }
+
+            var publishResultMap = ProcessEntitiesInPublishResults(publishResults, ctxManager, wgSaveMap);
+
+            //wgSaveMap.MergeMap(publishResultMap);
+
+            //return wgSaveMap;
+
+            return publishResultMap;
+
         }
 
         private SaveMap ProcessEntitiesInPublishResults(IEnumerable<PubWg> pubWgs, EFContextProvider<EcatContext> ctxProvider, SaveMap wgSaveMap)
