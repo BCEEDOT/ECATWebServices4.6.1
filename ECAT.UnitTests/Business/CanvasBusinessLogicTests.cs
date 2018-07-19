@@ -6,13 +6,184 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Bogus;
 using Ecat.Data.Models.Canvas;
+using Ecat.Data.Models.Common;
 using Ecat.Data.Models.School;
 using FluentAssertions;
 using Telerik.JustMock;
 
 namespace Ecat.Business.Business.Tests
 {
+    public class Name
+    {
+        public string FirstName;
+        public string LastName;
+        public string MiddleInitial;
+    }
+
+    public class Build
+    {
+        private int _recIdFaker;
+        private int _bbUserId;
+        private int _enrollmentIdFaker;
+        private int _courseEnrollmentIdFaker;
+
+        public Build()
+        {
+            _recIdFaker = 1;
+            _bbUserId = 1000;
+            _enrollmentIdFaker = 1;
+            _courseEnrollmentIdFaker = 1000;
+        }
+
+
+
+        public CourseReconcile CourseReconcile(int numStus, int numFacs, int numCanDeleteStus, int numCanDeleteFac)
+        {
+            var courseReconcile = Mock.Create<CourseReconcile>();
+            //var course = Mock.Create<Course>();
+            //var studentReconcile = Mock.Create<UserReconcile>();
+            //var facultyReconcile = Mock.Create<UserReconcile>();
+            var courseIds = 1;
+            var bbCourseIds = 1;
+
+            var ecatCourses = new Faker<Course>()
+                .RuleFor(c => c.Name, f =>
+                {
+                    var name = $"AFSNCOA {courseIds}";
+                    return name;
+
+                })
+                .RuleFor(c => c.Id, f => courseIds++)
+                .RuleFor(c => c.AcademyId, "AFSNCOA")
+                .RuleFor(c => c.BbCourseId, f => (bbCourseIds++).ToString())
+
+                .RuleFor(c => c.GradReportPublished, false)
+                .RuleFor(c => c.StartDate, f => f.Date.Soon())
+                .RuleFor(c => c.GradDate, f => f.Date.Future());
+
+            var course = ecatCourses.Generate();
+            courseReconcile.Course = course;
+
+            var studentsToReconcile = new List<UserReconcile>();
+            var facultyToReconcile = new List<UserReconcile>();
+
+            if (numStus > 0)
+            {
+                studentsToReconcile.AddRange(GenerateUserReconcile(numStus, false));
+            }
+
+            if (numCanDeleteStus > 0)
+            {
+                studentsToReconcile.AddRange(GenerateUserReconcile(numCanDeleteStus, true));
+            }
+
+            if (numFacs > 0)
+            {
+                facultyToReconcile.AddRange(GenerateUserReconcile(numFacs, false));
+            }
+
+            if (numCanDeleteFac > 0)
+            {
+                facultyToReconcile.AddRange(GenerateUserReconcile(numCanDeleteFac, true));
+            }
+
+            courseReconcile.StudentsToReconcile = studentsToReconcile;
+            courseReconcile.FacultyToReconcile = facultyToReconcile;
+           
+            return courseReconcile;
+        }
+
+        public List<CanvasEnrollment> CanvasEnrollments(int numStus, int numInactiveStus, int numFac, int numInactiveFac)
+        {
+            var canvasEnrollments = new List<CanvasEnrollment>();
+
+            if (numStus > 0)
+            {
+                canvasEnrollments.AddRange(GenerateCanvasEnrollments(numStus, true, 1, false));
+            }
+
+            if (numInactiveStus > 0)
+            {
+                canvasEnrollments.AddRange(GenerateCanvasEnrollments(numInactiveStus, false, 1, false));
+            }
+
+            if (numFac > 0)
+            {
+                canvasEnrollments.AddRange(GenerateCanvasEnrollments(numFac, true, 1, true));
+            }
+
+            if (numInactiveFac > 0)
+            {
+                canvasEnrollments.AddRange(GenerateCanvasEnrollments(numInactiveFac, false, 1, true));
+            }
+
+            return canvasEnrollments;
+
+        }
+
+        private IEnumerable<CanvasEnrollment> GenerateCanvasEnrollments(int num, bool isActive, int courseId, bool isFaculty)
+        {
+
+            var canvasEnrollments = new Faker<CanvasEnrollment>()
+                .RuleFor(ce => ce.id, f => _courseEnrollmentIdFaker)
+                .RuleFor(ce => ce.course_id, courseId)
+                .RuleFor(ce => ce.course_section_id, 1)
+                .RuleFor(ce => ce.enrollment_state, f => isActive ? "active" : "inactive")
+                .RuleFor(ce => ce.user_id, f=> _courseEnrollmentIdFaker)
+                .RuleFor(ce => ce.role, f => isFaculty ? "TeacherEnrollment" : "StudentEnrollment")
+                .RuleFor(ce => ce.type, f => isFaculty ? "TeacherEnrollment" : "StudentEnrollment")
+                .RuleFor(ce => ce.role_id, f => isFaculty ? 72 : 3)
+                .RuleFor(ce => ce.user, f =>
+                {
+                    var name = CreateName();
+                    var user = new Faker<CanvasUser>()
+                        .RuleFor(u => u.id, uf => _courseEnrollmentIdFaker++)
+                        .RuleFor(u => u.name, uf => $"{name.FirstName} {name.MiddleInitial} {name.LastName} ")
+                        .RuleFor(u => u.sortable_name, uf => $"{name.LastName}, {name.FirstName} {name.MiddleInitial}")
+                        .RuleFor(u => u.short_name, uf => $"{name.LastName}, {name.FirstName} {name.MiddleInitial}")
+                        .RuleFor(u => u.login_id, uf => $"{name.FirstName}.{name.MiddleInitial}.{name.LastName}.au");
+
+                    return user;
+
+                });
+
+            return canvasEnrollments.Generate(num);
+        }
+
+        private static Name CreateName()
+        {
+            var faker = new Faker();
+            var middleInitial = new[] { "a", "b", "c", "d", "e" };
+            var name = new Name
+            {
+                FirstName = faker.Name.FirstName(),
+                MiddleInitial = faker.PickRandom(middleInitial),
+                LastName = faker.Name.LastName()
+            };
+
+            return name;
+        }
+
+        private IEnumerable<UserReconcile> GenerateUserReconcile(int num, bool canDelete)
+        {
+              
+            var studentReconciles = new Faker<UserReconcile>()
+                .RuleFor(sr => sr.PersonId, f => _recIdFaker++)
+                .RuleFor(sr => sr.BbUserId, f => (_bbUserId++).ToString())
+                .RuleFor(sr => sr.CanDelete, canDelete)
+                .RuleFor(sr => sr.IsMarkedDeleted, false)
+                .RuleFor(sr => sr.NewEnrollment, false)
+                .RuleFor(sr => sr.RemoveEnrollment, false)
+                .RuleFor(sr => sr.FlagDeleted, false)
+                .RuleFor(sr => sr.UnFlagDeleted, false);
+
+            return studentReconciles.Generate(num);
+            
+        }
+    }
+
     [TestClass()]
     public class CanvasBusinessLogicTests
     {
@@ -125,6 +296,96 @@ namespace Ecat.Business.Business.Tests
 
             courseReconcile.Count().Should().Be(0);
 
+        }
+
+        //public static CourseReconcile ReconcileCourseMembers(CourseReconcile ecatCourseReconcile, List<CanvasEnrollment> canvasEnrollmentsReturned, int facultyId)
+        [TestMethod()]
+        public void ReconcileCourseMembers_AddNewMembersToCanvasCourse_ReturnNewEnrollments()
+        {
+            //Arrange
+            
+            var build = new Build();
+            var courseReconcile = build.CourseReconcile(0, 0, 0, 0);
+            var courseEnrollments = build.CanvasEnrollments(2, 2, 2, 2);
+
+            //Act
+
+            courseReconcile = CanvasBusinessLogic.ReconcileCourseMembers(courseReconcile, courseEnrollments, 1);
+
+            //Assert
+            var facAdd = courseReconcile.FacultyToReconcile.Where(reconcile => reconcile.NewEnrollment);
+            var stuAdd = courseReconcile.StudentsToReconcile.Where(reconcile => reconcile.NewEnrollment);
+            var totalAdd = facAdd.Count() + stuAdd.Count();
+
+            var facDelete = courseReconcile.FacultyToReconcile.Where(reconcile => reconcile.RemoveEnrollment);
+            var stuDelete = courseReconcile.StudentsToReconcile.Where(reconcile => reconcile.RemoveEnrollment);
+            var totalDelete = facDelete.Count() + stuDelete.Count();
+
+            facAdd.Count().Should().Be(2);
+            stuAdd.Count().Should().Be(2);
+            facDelete.Count().Should().Be(0);
+            stuDelete.Count().Should().Be(0);
+
+        }
+
+        //public static CourseReconcile ReconcileCourseMembers(CourseReconcile ecatCourseReconcile, List<CanvasEnrollment> canvasEnrollmentsReturned, int facultyId)
+        [TestMethod()]
+        public void ReconcileCourseMembers_RemoveMembersFromCanvasCourse_ReturnDeletedEnrollments()
+        {
+            //Arrange
+
+            var build = new Build();
+            var courseReconcile = build.CourseReconcile(2, 2, 2, 2);
+            var courseEnrollments = build.CanvasEnrollments(0, 0, 0, 0);
+
+            //Act
+
+            courseReconcile = CanvasBusinessLogic.ReconcileCourseMembers(courseReconcile, courseEnrollments, 1);
+
+            //Assert
+            var facAdd = courseReconcile.FacultyToReconcile.Where(reconcile => reconcile.NewEnrollment);
+            var stuAdd = courseReconcile.StudentsToReconcile.Where(reconcile => reconcile.NewEnrollment);
+            var totalAdd = facAdd.Count() + stuAdd.Count();
+
+            var facDelete = courseReconcile.FacultyToReconcile.Where(reconcile => reconcile.RemoveEnrollment);
+            var stuDelete = courseReconcile.StudentsToReconcile.Where(reconcile => reconcile.RemoveEnrollment);
+            var totalDelete = facDelete.Count() + stuDelete.Count();
+
+            facAdd.Count().Should().Be(0);
+            stuAdd.Count().Should().Be(0);
+            facDelete.Count().Should().Be(4);
+            stuDelete.Count().Should().Be(4);
+
+        }
+
+        //public static CourseReconcile ReconcileCourseMembers(CourseReconcile ecatCourseReconcile, List<CanvasEnrollment> canvasEnrollmentsReturned, int facultyId)
+        [TestMethod()]
+        public void ReconcileCourseMembers_NoChangesFromCanvasCourse_ReturnNoNeededChanges()
+        {
+            //Arrange
+
+            var build = new Build();
+            var courseReconcile = build.CourseReconcile(2, 2, 0, 0);
+            var courseEnrollments = build.CanvasEnrollments(2, 0, 2, 0);
+
+            //Act
+
+            courseReconcile = CanvasBusinessLogic.ReconcileCourseMembers(courseReconcile, courseEnrollments, 1);
+
+            //Assert
+            var facAdd = courseReconcile.FacultyToReconcile.Where(reconcile => reconcile.NewEnrollment);
+            var stuAdd = courseReconcile.StudentsToReconcile.Where(reconcile => reconcile.NewEnrollment);
+            var totalAdd = facAdd.Count() + stuAdd.Count();
+
+            var facDelete = courseReconcile.FacultyToReconcile.Where(reconcile => reconcile.RemoveEnrollment);
+            var stuDelete = courseReconcile.StudentsToReconcile.Where(reconcile => reconcile.RemoveEnrollment);
+            var totalDelete = facDelete.Count() + stuDelete.Count();
+
+            facAdd.Count().Should().Be(0);
+            stuAdd.Count().Should().Be(0);
+            facDelete.Count().Should().Be(0);
+            stuDelete.Count().Should().Be(0);
+            
         }
     }
 }
