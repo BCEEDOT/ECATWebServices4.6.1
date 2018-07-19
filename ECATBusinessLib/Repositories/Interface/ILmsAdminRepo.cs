@@ -27,8 +27,8 @@ namespace Ecat.Business.Repositories.Interface
 
         Task<List<WorkGroupModel>> GetCourseModels(int courseId);
 
-        Task<CourseReconResult> ReconcileCanvasCourses();
-        Task<MemReconResult> ReconcileCanvasCourseMems(int courseId);
+        Task<CourseReconResult> PollCanvasCourses();
+        Task<MemReconResult> PollCanvasCourseMems(int courseId);
     }
 
     public interface ILmsAdminGroupOps
@@ -47,8 +47,8 @@ namespace Ecat.Business.Repositories.Interface
 
     public interface ILmsAdminTokenRepo
     {
-        int loggedInUserId { get; set; }
-
+        int LoggedInUserId { get; set; }
+        ProfileFaculty Faculty { get; set; }
         Task<bool> CheckCanvasTokenInfo();
         Task<bool> GetRefreshToken(string authCode);
         Task<string> GetAccessToken();

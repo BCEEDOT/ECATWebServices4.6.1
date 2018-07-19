@@ -29,10 +29,13 @@ namespace Ecat.Web.Controllers
     {
         private readonly ILmsAdminCourseOps _lmsCourseOps;
         private readonly ILmsAdminGroupOps _lmsGroupOps;
-        public LmsAdminController(ILmsAdminCourseOps lmsCourseOps, ILmsAdminGroupOps lmsGroupOps)
+        private readonly ILmsAdminTokenRepo _lmsTokenRepo;
+
+        public LmsAdminController(ILmsAdminCourseOps lmsCourseOps, ILmsAdminGroupOps lmsGroupOps, ILmsAdminTokenRepo lmsTokenRepo)
         {
             _lmsCourseOps = lmsCourseOps;
             _lmsGroupOps = lmsGroupOps;
+            _lmsTokenRepo = lmsTokenRepo;
         }
 
         [HttpGet]
@@ -45,6 +48,7 @@ namespace Ecat.Web.Controllers
         {
             _lmsCourseOps.Faculty = person.Faculty;
             _lmsGroupOps.Faculty = person.Faculty;
+            _lmsTokenRepo.Faculty = person.Faculty;
         }
 
         [HttpPost]
@@ -87,6 +91,38 @@ namespace Ecat.Web.Controllers
         public async Task<MemReconResult> PollCourseMembers(int courseId)
         {
             return await _lmsCourseOps.ReconcileCourseMembers(courseId);
+        }
+
+        [HttpGet]
+        public async Task<MemReconResult> PollCanvasCourseMembers(int courseId)
+        {
+
+            var token = await _lmsTokenRepo.CheckCanvasTokenInfo();
+            var result = new MemReconResult();
+            if (!token)
+            {
+                result.HasToken = false;
+                return result;
+            }
+
+            result = await _lmsCourseOps.PollCanvasCourseMems(courseId);
+            return result;
+
+        }
+
+        [HttpGet]
+        public async Task<CourseReconResult> PollCanvasCourses()
+        {
+            var token = await _lmsTokenRepo.CheckCanvasTokenInfo();
+            var result = new CourseReconResult();
+            if (!token)
+            {
+                result.HasToken = false;
+                return result;
+            }
+
+            result = await _lmsCourseOps.PollCanvasCourses();
+            return result;
         }
 
         [HttpGet]

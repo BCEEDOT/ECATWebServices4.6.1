@@ -21,7 +21,7 @@
         var success = document.getElementById("authorization").getAttribute("data-success");
         var message;
 
-        if (success) {
+        if (success === "True") {
             message = "<p>A token has been successfully generated for your LMS account.</p><p>Close this window and re-poll in ECAT.</p>";
         } else {
             message = "<p>There was a problem generating a token for your LMS account.</p><p>Close this window and try again.</p>";

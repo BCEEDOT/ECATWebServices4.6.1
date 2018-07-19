@@ -260,3 +260,4 @@ FakesAssemblies/
 _Pvt_Extensions
 Ecat.Web/ecat/Client/
 Ecat.Web/keys.config
+ECATBusinessLib/canvaskeys.config

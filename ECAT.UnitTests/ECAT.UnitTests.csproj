@@ -123,6 +123,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Business\CanvasBusinessLogicTests.cs" />
     <Compile Include="EcatBusinessLibUnitTests.cs" />
     <Compile Include="Guards\WorkGroupPublishTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

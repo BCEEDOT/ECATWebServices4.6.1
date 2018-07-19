@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 //using Ecat.Shared.Core.ModelLibrary.School;
 using Ecat.Data.Models.School;
+using Ecat.Data.Models.User;
 using TypeLite;
 
 namespace Ecat.Data.Models.Common
@@ -21,7 +22,14 @@ namespace Ecat.Data.Models.Common
     {
         public int PersonId { get; set; }
         public string BbUserId { get; set; }
+        public string CourseMemId { get; set; }
+        public Person Person { get; set; }
         public bool CanDelete { get; set; }
+        public bool IsMarkedDeleted { get; set; }
+        public bool NewEnrollment { get; set; }
+        public bool RemoveEnrollment { get; set; }
+        public bool FlagDeleted { get; set; }
+        public bool UnFlagDeleted { get; set; }
     }
 
     public class GroupMemberReconcile

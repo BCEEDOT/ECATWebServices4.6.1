@@ -7,6 +7,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Ecat.Business.Repositories.Interface;
 using Ecat.Data.Contexts;
+using System.Configuration;
+using System.Runtime.Remoting.Channels;
+using Ecat.Data.Models.Canvas;
+using Ecat.Data.Models.User;
 
 namespace Ecat.Business.Repositories
 {
@@ -18,11 +22,11 @@ namespace Ecat.Business.Repositories
 
     public class TokenResponse
     {
-        public string AccessToken { get; set; }
-        public string TokenType { get; set; }
-        public string RefreshToken { get; set; }
-        public int ExpiresIn { get; set; }
-        public TokenUser User { get; set; }
+        public string access_token { get; set; }
+        public string token_type { get; set; }
+        public string refresh_token { get; set; }
+        public int expires_in { get; set; }
+        public TokenUser user { get; set; }
     }
 
     public class TokenOps : ILmsAdminTokenRepo
@@ -31,12 +35,14 @@ namespace Ecat.Business.Repositories
         private readonly EcatContext ecatContext;
         //TODO: Update once we have production Canvas
         private readonly string canvasTokenUrl = "https://lms.stag.af.edu/login/oauth2/token";
-        private readonly string clientId = "10000000000036";
-        private readonly string clientSecret = "54654654654";
+        private readonly string clientId = ConfigurationManager.AppSettings["id"];
+        //Remove before checking in code. 
+        private readonly string clientSecret = ConfigurationManager.AppSettings["key"];
         //private readonly string redirectUri = "https://augateway.maxwell.af.mil";
-        private readonly string redirectUri = "https://localhost:4200";
+        private readonly string redirectUri = "https://aupublicdev.maxwell.af.mil/au/barnes/aa/ecat/development/canvasauth/tokenrequest";
 
-        public int loggedInUserId { get; set; }
+        public int LoggedInUserId { get; set; }
+        public ProfileFaculty Faculty { get; set; }
 
         public TokenOps(EcatContext mainCtx)
         {
@@ -48,7 +54,7 @@ namespace Ecat.Business.Repositories
         //return false should redirect the user to the canvas auth endpoint to get a code
         public async Task<bool> CheckCanvasTokenInfo()
         {
-            var canvLogin = await ecatContext.CanvasLogins.Where(cl => cl.PersonId == loggedInUserId).SingleOrDefaultAsync();
+            var canvLogin = await ecatContext.CanvasLogins.Where(cl => cl.PersonId == Faculty.PersonId).SingleOrDefaultAsync();
 
             if (canvLogin == null)
             {
@@ -98,7 +104,7 @@ namespace Ecat.Business.Repositories
             var respContent = await response.Content.ReadAsStringAsync();
             var respObject = Newtonsoft.Json.JsonConvert.DeserializeObject<TokenResponse>(respContent);
 
-            var ecatUser = await ecatContext.People.Where(p => p.BbUserId == respObject.User.Id.ToString()).SingleAsync();
+            var ecatUser = await ecatContext.People.Where(p => p.BbUserId == respObject.user.Id.ToString()).SingleOrDefaultAsync();
 
             if (ecatUser == null)
             {
@@ -109,31 +115,35 @@ namespace Ecat.Business.Repositories
                 .Where(cl => cl.PersonId == ecatUser.PersonId)
                 .SingleOrDefaultAsync();
 
-            if (respObject.AccessToken == null)
+            
+
+            if (respObject.access_token == null)
             {
                 //we got a success code from the canvas call, but didn't get a token. can this happen?
                 return false;
             }
 
-            canvLogin.AccessToken = respObject.AccessToken;
-            canvLogin.TokenExpires = DateTime.Now.AddSeconds(respObject.ExpiresIn);
-
-            //user can tell canvas to remember their authorization and give us a refresh token or not and we only get an access token
-            if (respObject.RefreshToken != null)
+            if (canvLogin == null)
             {
-                canvLogin.RefreshToken = respObject.RefreshToken;
-            }
+                canvLogin = new CanvasLogin
+                {
+                    AccessToken = respObject.access_token,
+                    TokenExpires = DateTime.Now.AddSeconds(respObject.expires_in),
+                    PersonId = ecatUser.PersonId
+                };
 
-            //Need a new login entry
-            if (canvLogin.PersonId == 0)
-            {
-                canvLogin.PersonId = ecatUser.PersonId;
                 ecatContext.CanvasLogins.Add(canvLogin);
             }
             else
             {
                 ecatContext.CanvasLogins.Attach(canvLogin);
                 ecatContext.Entry(canvLogin).State = System.Data.Entity.EntityState.Modified;
+            }
+
+            //user can tell canvas to remember their authorization and give us a refresh token or not and we only get an access token
+            if (respObject.refresh_token != null)
+            {
+                canvLogin.RefreshToken = respObject.refresh_token;
             }
 
             await ecatContext.SaveChangesAsync();
@@ -144,7 +154,7 @@ namespace Ecat.Business.Repositories
         //if this returns null, redirect user to the canvas auth endpoint
         public async Task<string> GetAccessToken()
         {
-            var canvLogin = await ecatContext.CanvasLogins.Where(cl => cl.PersonId == loggedInUserId).SingleOrDefaultAsync();
+            var canvLogin = await ecatContext.CanvasLogins.Where(cl => cl.PersonId == Faculty.PersonId).SingleOrDefaultAsync();
 
             if (canvLogin == null)
             {
@@ -159,7 +169,13 @@ namespace Ecat.Business.Repositories
 
             //get a new token if we are within 3 minutes of expiriation or don't know expiration(?)
             //3 is close, but any call we are doing shouldn't take that long
-            if (canvLogin.TokenExpires == null || canvLogin.TokenExpires < DateTime.Now.AddMinutes(3))
+            //canvLogin.TokenExpires < DateTime.Now.AddMinutes(3)
+            
+            //Datetime does not accept nullable - If null always return time greater than now plus 3 
+            var tokenExpires = canvLogin.TokenExpires ?? DateTime.Now;
+
+
+            if (DateTime.Compare(tokenExpires, DateTime.Now.AddMinutes(3)) < 0 )
             {
                 if (canvLogin.RefreshToken == null)
                 {
@@ -187,8 +203,8 @@ namespace Ecat.Business.Repositories
                 var respContent = await response.Content.ReadAsStringAsync();
                 var respObject = Newtonsoft.Json.JsonConvert.DeserializeObject<TokenResponse>(respContent);
 
-                canvLogin.AccessToken = respObject.AccessToken;
-                canvLogin.TokenExpires = DateTime.Now.AddSeconds(respObject.ExpiresIn);
+                canvLogin.AccessToken = respObject.access_token;
+                canvLogin.TokenExpires = DateTime.Now.AddSeconds(respObject.expires_in);
                 ecatContext.Entry(canvLogin).State = System.Data.Entity.EntityState.Modified;
 
                 await ecatContext.SaveChangesAsync();

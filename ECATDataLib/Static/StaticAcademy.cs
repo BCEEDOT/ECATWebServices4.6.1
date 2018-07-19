@@ -61,7 +61,7 @@ namespace Ecat.Data.Static
              Base = AcademyBase.Gunter,
              BbCategoryId = MpAcadCat.AFSNCOA,
              ParentBbCategoryId = MpAcadCat.BCEE,
-             CanvasAcctId = 1
+             CanvasAcctId = 374
          };
 
         public static Academy Ecat
