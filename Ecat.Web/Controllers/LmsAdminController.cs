@@ -99,13 +99,10 @@ namespace Ecat.Web.Controllers
 
             var token = await _lmsTokenRepo.CheckCanvasTokenInfo();
             var result = new MemReconResult();
-            if (!token)
-            {
-                result.HasToken = false;
-                return result;
-            }
 
-            result = await _lmsCourseOps.PollCanvasCourseMems(courseId);
+            if (token) return await _lmsCourseOps.PollCanvasCourseMems(courseId);
+                
+            result.HasToken = false;
             return result;
 
         }
@@ -115,14 +112,25 @@ namespace Ecat.Web.Controllers
         {
             var token = await _lmsTokenRepo.CheckCanvasTokenInfo();
             var result = new CourseReconResult();
-            if (!token)
-            {
-                result.HasToken = false;
-                return result;
-            }
 
-            result = await _lmsCourseOps.PollCanvasCourses();
+            if (token) return await _lmsCourseOps.PollCanvasCourses();
+
+            result.HasToken = false;
             return result;
+
+        }
+
+        [HttpGet]
+        public async Task<GroupReconResult> PollCanvasSections(int courseId)
+        {
+            var token = await _lmsTokenRepo.CheckCanvasTokenInfo();
+            var result = new GroupReconResult();
+
+            if (token) return await _lmsGroupOps.PollCanvasSections(courseId);
+
+            result.HasToken = false;
+            return result;
+
         }
 
         [HttpGet]

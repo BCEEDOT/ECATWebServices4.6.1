@@ -43,6 +43,7 @@ namespace Ecat.Business.Repositories.Interface
         Task<SaveGradeResult> SyncBbGrades(int crseId, string wgCategory);
 
         Task<List<WorkGroup>> GetAllGroupSetMembers(int courseId, string categoryId);
+        Task<GroupReconResult> PollCanvasSections(int courseId);
     }
 
     public interface ILmsAdminTokenRepo
