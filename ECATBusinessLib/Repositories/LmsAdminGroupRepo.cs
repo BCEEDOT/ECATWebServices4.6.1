@@ -100,7 +100,6 @@ namespace Ecat.Business.Repositories
             return workGroup;
         }
 
-
         public async Task<List<WorkGroup>> GetAllGroupSetMembers(int courseId, string categoryId)
         {
             var latestCourse = ctxManager.Context.Courses.Where(crse => crse.Id == courseId).Single();

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Bogus;
 using Ecat.Data.Models.Canvas;
 using Ecat.Data.Models.Common;
+using Ecat.Data.Models.Designer;
 using Ecat.Data.Models.School;
 using FluentAssertions;
 using Telerik.JustMock;
@@ -386,6 +387,104 @@ namespace Ecat.Business.Business.Tests
             facDelete.Count().Should().Be(0);
             stuDelete.Count().Should().Be(0);
             
+        }
+
+        // public static List<WorkGroup> ReconcileCanvasCourseSections
+        // (List<CanvasSection> canvasSectionsReturned, ICollection<WorkGroup> workGroups,
+        // int crseId, WorkGroupModel workGroupModel, int facId, Guid reconResultId)
+
+        [TestMethod()]
+        public void ReconcileCanvasCourseSections_NewCanvasCourseSections_ReturnAddedWorkGroups()
+        {
+            //Arrange
+            var faker = new Faker();
+            var crseId = faker.Random.Digits(1)[0];
+            var reconResultId = faker.Random.Guid();
+            var facId = faker.Random.Digits(1)[0];
+            var canvasSectionId = 1000;
+            var workGroupId = 1;
+            var bbGroupId = 1000;
+
+            var canvasSections = new Faker<CanvasSection>()
+                .RuleFor(csr => csr.id, f => canvasSectionId)
+                .RuleFor(csr => csr.course_id, 1)
+                .RuleFor(csr => csr.name, f => $"Flight 0{canvasSectionId++}");
+
+            var canvasSectionsReturned = canvasSections.Generate(8);
+
+            var workGroups = new Faker<WorkGroup>()
+                .RuleFor(wg => wg.WorkGroupId, f => workGroupId)
+                .RuleFor(wg => wg.CourseId, 1)
+                .RuleFor(wg => wg.WgModelId, 1)
+                .RuleFor(wg => wg.MpCategory, "BC2")
+                .RuleFor(wg => wg.GroupNumber, f => $"0{workGroupId++}")
+                .RuleFor(wg => wg.BbGroupId, f => (bbGroupId++).ToString())
+                .RuleFor(wg => wg.DefaultName, f => $"Flight 0{canvasSectionId++}")
+                .RuleFor(wg => wg.MpSpStatus, "Created")
+                .RuleFor(wg => wg.IsPrimary, false)
+                .RuleFor(wg => wg.ModifiedById, 1)
+                .RuleFor(wg => wg.ModifiedDate, f => f.Date.Soon());
+
+            var workGroupsReturned = workGroups.Generate(4);
+
+            var workGroupModel = new Faker<WorkGroupModel>()
+                .RuleFor(wgm => wgm.AssignedSpInstrId, 1);
+
+            var models = workGroupModel.Generate();
+            //Act
+            var workGroupsToAdd = CanvasBusinessLogic.ReconcileCanvasCourseSections(canvasSectionsReturned, workGroupsReturned, crseId,
+                models, facId, reconResultId);
+
+            //Assert
+
+            workGroupsToAdd.Count().Should().Be(4);
+        }
+
+        [TestMethod()]
+        public void ReconcileCanvasCourseSections_NoNewCanvasCourseSections_ReturnNoWorkGroupsAdded()
+        {
+            //Arrange
+            var faker = new Faker();
+            var crseId = faker.Random.Digits(1)[0];
+            var reconResultId = faker.Random.Guid();
+            var facId = faker.Random.Digits(1)[0];
+            var canvasSectionId = 1000;
+            var workGroupId = 1;
+            var bbGroupId = 1000;
+
+            var canvasSections = new Faker<CanvasSection>()
+                .RuleFor(csr => csr.id, f => canvasSectionId)
+                .RuleFor(csr => csr.course_id, 1)
+                .RuleFor(csr => csr.name, f => $"Flight 0{canvasSectionId++}");
+
+            var canvasSectionsReturned = canvasSections.Generate(8);
+
+            var workGroups = new Faker<WorkGroup>()
+                .RuleFor(wg => wg.WorkGroupId, f => workGroupId)
+                .RuleFor(wg => wg.CourseId, 1)
+                .RuleFor(wg => wg.WgModelId, 1)
+                .RuleFor(wg => wg.MpCategory, "BC2")
+                .RuleFor(wg => wg.GroupNumber, f => $"0{workGroupId++}")
+                .RuleFor(wg => wg.BbGroupId, f => (bbGroupId++).ToString())
+                .RuleFor(wg => wg.DefaultName, f => $"Flight 0{canvasSectionId++}")
+                .RuleFor(wg => wg.MpSpStatus, "Created")
+                .RuleFor(wg => wg.IsPrimary, false)
+                .RuleFor(wg => wg.ModifiedById, 1)
+                .RuleFor(wg => wg.ModifiedDate, f => f.Date.Soon());
+
+            var workGroupsReturned = workGroups.Generate(8);
+
+            var workGroupModel = new Faker<WorkGroupModel>()
+                .RuleFor(wgm => wgm.AssignedSpInstrId, 1);
+
+            var models = workGroupModel.Generate();
+            //Act
+            var workGroupsToAdd = CanvasBusinessLogic.ReconcileCanvasCourseSections(canvasSectionsReturned, workGroupsReturned, crseId,
+                models, facId, reconResultId);
+
+            //Assert
+
+            workGroupsToAdd.Count().Should().Be(0);
         }
     }
 }
