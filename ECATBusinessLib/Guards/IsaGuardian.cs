@@ -348,11 +348,14 @@ namespace Ecat.Business.Guards
             var svrWgIds = publishingWgs.Select(wg => wg.WorkGroupId);
             var grpsWithMemsIds = ctxManager.Context.WorkGroups.Where(grp => svrWgIds.Contains(grp.WorkGroupId) && grp.GroupMembers.Where(mem => !mem.IsDeleted).Count() > 0).Select(wg => wg.WorkGroupId);
 
-            var publishResultMap = WorkGroupPublish.Publish(wgSaveMap, grpsWithMemsIds, loggedInUser.PersonId, ctxManager);
+            if (grpsWithMemsIds.Any())
+            {
+                var publishResultMap = WorkGroupPublish.Publish(wgSaveMap, grpsWithMemsIds, loggedInUser.PersonId, ctxManager);
 
-            //wgSaveMap.MergeMap(publishResultMap);
+                return publishResultMap;
+            }
 
-            return publishResultMap;
+            return wgSaveMap;
         }
     }
 }
