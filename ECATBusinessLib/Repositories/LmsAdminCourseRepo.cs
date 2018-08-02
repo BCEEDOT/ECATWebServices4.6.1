@@ -435,11 +435,11 @@ namespace Ecat.Business.Repositories
 
                     };
                     groupMemReconResult.NumAdded += 1;
-                    groupMemReconResult.GroupMembers.Add(newStudentInGroup);
+                    //groupMemReconResult.GroupMembers.Add(newStudentInGroup);
                     additions.Add(newStudentInGroup);
                 });  
 
-                groupMemReconResults.Add(groupMemReconResult);
+                //groupMemReconResults.Add(groupMemReconResult);
             });
 
             ctxManager.Context.StudentInGroups.AddRange(additions);
@@ -822,7 +822,7 @@ namespace Ecat.Business.Repositories
                 reconResult.Groups.Add(sta);
             });
 
-            await ctxManager.Context.SaveChangesAsync();
+            reconResult.NumAdded = await ctxManager.Context.SaveChangesAsync();
 
             return reconResult;
 
