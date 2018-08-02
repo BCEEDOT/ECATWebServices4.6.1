@@ -432,7 +432,7 @@ namespace Ecat.Business.Business.Tests
 
             var models = workGroupModel.Generate();
             //Act
-            var workGroupsToAdd = CanvasBusinessLogic.ReconcileCanvasCourseSections(canvasSectionsReturned, workGroupsReturned, crseId,
+            var workGroupsToAdd = CanvasBusinessLogic.ReconcileWorkGroups(canvasSectionsReturned, workGroupsReturned, crseId,
                 models, facId, reconResultId);
 
             //Assert
@@ -479,7 +479,7 @@ namespace Ecat.Business.Business.Tests
 
             var models = workGroupModel.Generate();
             //Act
-            var workGroupsToAdd = CanvasBusinessLogic.ReconcileCanvasCourseSections(canvasSectionsReturned, workGroupsReturned, crseId,
+            var workGroupsToAdd = CanvasBusinessLogic.ReconcileWorkGroups(canvasSectionsReturned, workGroupsReturned, crseId,
                 models, facId, reconResultId);
 
             //Assert

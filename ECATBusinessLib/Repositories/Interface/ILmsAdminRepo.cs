@@ -20,15 +20,16 @@ namespace Ecat.Business.Repositories.Interface
         string Metadata { get; }
         ProfileFaculty Faculty { get; set; }
         Task<List<Course>> GetAllCourses();
-        Task<CourseReconResult> ReconcileCourses();
         Task<Course> GetAllCourseMembers(int courseId);
-        Task<MemReconResult> ReconcileCourseMembers(int courseId);
         SaveResult SaveClientChanges(JObject saveBundle);
 
         Task<List<WorkGroupModel>> GetCourseModels(int courseId);
-
         Task<CourseReconResult> PollCanvasCourses();
-        Task<MemReconResult> PollCanvasCourseMems(int courseId);
+        Task<CourseDetailsReconResult> PollCanvasCourseDetails(int courseId);
+
+        //Task<CourseReconResult> ReconcileCourses();
+        //Task<MemReconResult> ReconcileCourseMembers(int courseId);
+
     }
 
     public interface ILmsAdminGroupOps
@@ -36,14 +37,15 @@ namespace Ecat.Business.Repositories.Interface
         ProfileFaculty Faculty { get; set; }
         Task<Course> GetCourseGroups(int courseId);
         Task<WorkGroup> GetWorkGroupMembers(int workGroupId);
-        Task<GroupReconResult> ReconcileGroups(int courseId);
-        Task<GroupMemReconResult> ReconcileGroupMembers(int wgId);
-        //Task<List<GroupMemReconResult>> ReconcileGroupMembers(int courseId, string groupCategory);
-        Task<List<GroupMemReconResult>> ReconcileAllGroupMembers(int courseId);
-        Task<SaveGradeResult> SyncBbGrades(int crseId, string wgCategory);
 
         Task<List<WorkGroup>> GetAllGroupSetMembers(int courseId, string categoryId);
         Task<GroupReconResult> PollCanvasSections(int courseId);
+        //Task<GroupReconResult> ReconcileGroups(int courseId);
+        //Task<GroupMemReconResult> ReconcileGroupMembers(int wgId);
+        //Task<List<GroupMemReconResult>> ReconcileGroupMembers(int courseId, string groupCategory);
+        //Task<List<GroupMemReconResult>> ReconcileAllGroupMembers(int courseId);
+        //Task<SaveGradeResult> SyncBbGrades(int crseId, string wgCategory);
+        //Task<List<GroupMemReconResult>> PollCanvasSectionMembers(int workGroupId);
     }
 
     public interface ILmsAdminTokenRepo

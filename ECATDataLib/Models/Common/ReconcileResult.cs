@@ -17,6 +17,7 @@ namespace Ecat.Data.Models.Common
         public string AcademyId { get; set; }
         public int NumAdded { get; set; }
         public int NumRemoved { get; set; }
+        public bool IsAuthorized { get; set; }
         public bool HasToken { get; set; }
     }
 
@@ -50,5 +51,17 @@ namespace Ecat.Data.Models.Common
         public string WorkGroupName { get; set; }
         public string GroupType { get; set; }
         public ICollection<CrseStudentInGroup> GroupMembers { get; set; }
+    }
+
+    public class CourseDetailsReconResult : ReconcileResult
+    {
+        public GroupReconResult GroupReconResult { get; set; }
+        public MemReconResult CourseMemberReconResult { get; set; }
+        public List<GroupMemReconResult> GroupMemReconResults { get; set; }
+        public bool GroupReconSuccess { get; set; }
+        public bool MemReconSuccess { get; set; }
+        public bool GroupMemReconSuccess { get; set; }
+        public string ErrorMessage { get; set; }
+
     }
 }

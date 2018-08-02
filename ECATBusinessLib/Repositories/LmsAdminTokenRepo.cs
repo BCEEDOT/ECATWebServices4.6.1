@@ -56,24 +56,14 @@ namespace Ecat.Business.Repositories
         {
             var canvLogin = await ecatContext.CanvasLogins.Where(cl => cl.PersonId == Faculty.PersonId).SingleOrDefaultAsync();
 
-            if (canvLogin == null)
-            {
-                return false;
-            }
-
-            if (canvLogin.RefreshToken == null)
+            if (canvLogin?.RefreshToken == null)
             {
                 return false;
             }
 
             var accessToken = await GetAccessToken();
 
-            if (accessToken == null)
-            {
-                return false;
-            }
-
-            return true;
+            return accessToken != null;
         }
 
         //after getting the code from the canvas auth endpoint come here
@@ -156,12 +146,7 @@ namespace Ecat.Business.Repositories
         {
             var canvLogin = await ecatContext.CanvasLogins.Where(cl => cl.PersonId == Faculty.PersonId).SingleOrDefaultAsync();
 
-            if (canvLogin == null)
-            {
-                return null;
-            }
-
-            if (canvLogin.AccessToken == null)
+            if (canvLogin?.AccessToken == null)
             {
                 //there isn't a time where we will have a refresh token but no access token unless something weird happened, so just have the user re-auth with canvas
                 return null;

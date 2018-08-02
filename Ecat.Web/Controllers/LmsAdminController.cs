@@ -81,26 +81,26 @@ namespace Ecat.Web.Controllers
             return await _lmsGroupOps.GetWorkGroupMembers(workGroupId);
         }
 
-        [HttpGet]
-        public async Task<CourseReconResult> PollCourses()
-        {
-            return await _lmsCourseOps.ReconcileCourses();
-        }
+        //[HttpGet]
+        //public async Task<CourseReconResult> PollCourses()
+        //{
+        //    return await _lmsCourseOps.ReconcileCourses();
+        //}
+
+        //[HttpGet]
+        //public async Task<MemReconResult> PollCourseMembers(int courseId)
+        //{
+        //    return await _lmsCourseOps.ReconcileCourseMembers(courseId);
+        //}
 
         [HttpGet]
-        public async Task<MemReconResult> PollCourseMembers(int courseId)
-        {
-            return await _lmsCourseOps.ReconcileCourseMembers(courseId);
-        }
-
-        [HttpGet]
-        public async Task<MemReconResult> PollCanvasCourseMembers(int courseId)
+        public async Task<CourseDetailsReconResult> PollCanvasCourseDetails(int courseId)
         {
 
-            var token = await _lmsTokenRepo.CheckCanvasTokenInfo();
-            var result = new MemReconResult();
+            var hasToken = await _lmsTokenRepo.CheckCanvasTokenInfo();
+            var result = new CourseDetailsReconResult();
 
-            if (token) return await _lmsCourseOps.PollCanvasCourseMems(courseId);
+            if (hasToken) return await _lmsCourseOps.PollCanvasCourseDetails(courseId);
                 
             result.HasToken = false;
             return result;
@@ -120,30 +120,50 @@ namespace Ecat.Web.Controllers
 
         }
 
-        [HttpGet]
-        public async Task<GroupReconResult> PollCanvasSections(int courseId)
-        {
-            var token = await _lmsTokenRepo.CheckCanvasTokenInfo();
-            var result = new GroupReconResult();
+        //[HttpGet]
+        //public async Task<GroupReconResult> PollCanvasSections(int courseId)
+        //{
+        //    var token = await _lmsTokenRepo.CheckCanvasTokenInfo();
+        //    var result = new GroupReconResult();
 
-            if (token) return await _lmsGroupOps.PollCanvasSections(courseId);
+        //    if (token) return await _lmsGroupOps.PollCanvasSections(courseId);
 
-            result.HasToken = false;
-            return result;
+        //    result.HasToken = false;
+        //    return result;
 
-        }
+        //}
 
-        [HttpGet]
-        public async Task<GroupReconResult> PollGroups(int courseId)
-        {
-            return await _lmsGroupOps.ReconcileGroups(courseId);
-        }
+        //[HttpGet]
+        //public async Task<List<GroupMemReconResult>> PollCanvasSectionMembers(int courseId)
+        //{
+        //    var token = await _lmsTokenRepo.CheckCanvasTokenInfo();
+        //    var result = new List<GroupMemReconResult>();
+            
 
-        [HttpGet]
-        public async Task<GroupMemReconResult> PollGroupMembers(int workGroupId)
-        {
-            return await _lmsGroupOps.ReconcileGroupMembers(workGroupId);
-        }
+        //    if (token) return await _lmsGroupOps.PollCanvasSectionMembers(courseId);
+
+        //    var groupReconResult = new GroupMemReconResult
+        //    {
+        //        HasToken = false
+        //    };
+
+        //    result.Add(groupReconResult);
+
+        //    return result;
+        //}
+
+
+        //[HttpGet]
+        //public async Task<GroupReconResult> PollGroups(int courseId)
+        //{
+        //    return await _lmsGroupOps.ReconcileGroups(courseId);
+        //}
+
+        //[HttpGet]
+        //public async Task<GroupMemReconResult> PollGroupMembers(int workGroupId)
+        //{
+        //    return await _lmsGroupOps.ReconcileGroupMembers(workGroupId);
+        //}
 
         //[HttpGet]
         //public async Task<List<GroupMemReconResult>> PollGroupCategory(int courseId, string category)
@@ -152,16 +172,16 @@ namespace Ecat.Web.Controllers
         //    //return await _lmsGroupOps.ReconcileGroupMembers(courseId, category);
         //}
         //ECAT 2.0 only get BC1 groups from LMS
-        [HttpGet]
-        public async Task<List<GroupMemReconResult>> PollGroupCategory(int courseId)
-        {
-            return await _lmsGroupOps.ReconcileAllGroupMembers(courseId);
-        }
+        //[HttpGet]
+        //public async Task<List<GroupMemReconResult>> PollGroupCategory(int courseId)
+        //{
+        //    return await _lmsGroupOps.ReconcileAllGroupMembers(courseId);
+        //}
 
-        [HttpGet]
-        public async Task<SaveGradeResult> SyncBbGrades(int crseId, string wgCategory) {
-            return await _lmsGroupOps.SyncBbGrades(crseId, wgCategory);
-        }
+        //[HttpGet]
+        //public async Task<SaveGradeResult> SyncBbGrades(int crseId, string wgCategory) {
+        //    return await _lmsGroupOps.SyncBbGrades(crseId, wgCategory);
+        //}
 
         [HttpGet]
         public async Task<List<WorkGroupModel>> GetCourseModels(int courseId)

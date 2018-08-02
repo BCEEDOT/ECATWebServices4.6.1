@@ -42,6 +42,46 @@ namespace Ecat.Business.Business
             return reconCourses;
         }
 
+        public static List<WorkGroup> ReconcileWorkGroups(List<CanvasSection> canvasSectionsReturned, ICollection<WorkGroup> workGroups, int crseId, WorkGroupModel workGroupModel, int facId, Guid reconResultId)
+        {
+            var newWorkGroups = new List<WorkGroup>();
+            //Compare Canvas Id to Workgroup BBgroupId
+
+            canvasSectionsReturned.ForEach(csr =>
+            {
+                var sectionAlreadyInEcat = workGroups.SingleOrDefault(wg => wg.BbGroupId == csr.id.ToString());
+
+                if (sectionAlreadyInEcat == null)
+                {
+                    var newGroup = new WorkGroup()
+                    {
+                        BbGroupId = csr.id.ToString(),
+                        DefaultName = csr.name,
+                        CourseId = crseId,
+                        WgModelId = workGroupModel.Id,
+                        AssignedSpInstrId = workGroupModel.AssignedSpInstrId,
+                        MpCategory = MpGroupCategory.Wg1,
+                        MpSpStatus = MpSpStatus.Created,
+                        ModifiedById = facId,
+                        ModifiedDate = DateTime.Now,
+                        ReconResultId = reconResultId
+                    };
+
+                    var nameNum = csr.name.Split(' ')[1];
+                    if (!nameNum.StartsWith("0") && nameNum.Length == 1)
+                    {
+                        nameNum = "0" + nameNum;
+                    }
+                    newGroup.GroupNumber = nameNum;
+
+                    newWorkGroups.Add(newGroup);
+                }
+            });
+
+
+            return newWorkGroups;
+        }
+
         public static CourseReconcile ReconcileCourseMembers(CourseReconcile ecatCourseReconcile, List<CanvasEnrollment> canvasEnrollmentsReturned, int facultyId)
         {
             //Remove Dupliates -- Happens if user is in multiple flights
@@ -58,6 +98,133 @@ namespace Ecat.Business.Business
             ecatCourseReconcile.StudentsToReconcile = ReconcileCourseMembers(ecatCourseReconcile.StudentsToReconcile, stuCanvasEnrollmentsReturned, facultyId);
            
             return ecatCourseReconcile;
+        }
+
+        public static WorkgroupAndMemberReconcile ReconcileGroupMembers(int crseId, WorkgroupAndMemberReconcile courseWithWorkGroups, List<CanvasSection> canvasSectionsReturned)
+        {
+            var canvasMembers = canvasSectionsReturned.SelectMany(csr => csr.students).ToList();
+            var workgroupMembers = courseWithWorkGroups.WorkGroups.SelectMany(wg => wg.Members).ToList();
+            //It should be safe to use workgroups in database as sections should already be reconcilied. 
+            var workgroups = courseWithWorkGroups.WorkGroups.ToList();
+
+            var membersInSectionNotInAnyWorkgroup = canvasMembers.Where(cm =>
+                !workgroupMembers.Select(wgMember => wgMember.BbUserId).ToList().Contains(cm.id.ToString())).ToList();
+
+            var membersInWorkGroupNotInAnySection = workgroupMembers.Where(wgMember =>
+                !canvasMembers.Select(cm => cm.id.ToString()).ToList().Contains(wgMember.BbUserId)).ToList();
+
+            var membersInBoth = workgroupMembers.Where(wgMember =>
+                canvasMembers.Select(cm => cm.id.ToString()).ToList().Contains(wgMember.BbUserId)).ToList();
+
+            if (membersInSectionNotInAnyWorkgroup.Any())
+            {
+                membersInSectionNotInAnyWorkgroup.ForEach(mem =>
+                {
+
+                    //var membersWorkGroup = workgroups
+                    //    .Where(wg => wg.Members.Select(mem2 => mem2.BbUserId).Contains(mem.id.ToString())).ToList();
+
+                    var membersSection = canvasSectionsReturned
+                        .Where(section => section.students.Select(stu => stu.id).Contains(mem.id)).ToList().FirstOrDefault();
+
+                    var membersWorkgroup = workgroups.Where(wg => wg.BbWgId == membersSection.id.ToString()).ToList().FirstOrDefault();
+
+                    if (mem.enrollments.First().enrollment_state != "active") return;
+
+                    var newWorkgroupMemberReconcile = new WorkgroupMemberReconcile
+                    {
+                        //Will be added wwhen crseStudentInGroup is created for memeber
+                        StudentId = 0,
+
+
+                        //Can be added now
+                        WorkGroupId = membersWorkgroup.WgId,
+                        BbUserId = mem.id.ToString(),
+                        IsDeleted = false,
+                        IsMoving = false,
+                        NewEnrollment = true,
+                        RemoveEnrollment = false,
+                        HasChildren = false,
+                        StudentOnTheMoveReconcile = null,
+                        CanvasUser = mem,
+
+                    };
+
+                    membersWorkgroup.Members.Add(newWorkgroupMemberReconcile);
+
+
+                });
+
+            }
+
+            if (membersInWorkGroupNotInAnySection.Any())
+            {
+                membersInWorkGroupNotInAnySection.ForEach(mem =>
+                {
+                    mem.RemoveEnrollment = true;
+                });
+            }
+
+            if (membersInBoth.Any())
+            {
+                membersInBoth.ForEach(mem =>
+                {
+
+                    //var membersCurrentWorkGroup = workgroups.FirstOrDefault(wg => wg.WgId == mem.WorkGroupId);
+                    var membersCurrentWorkGroupId = mem.WorkGroupId;
+                    var membersCurrentSection = canvasSectionsReturned.Where(csr =>
+                        csr.students.Select(stu => stu.id.ToString()).ToList().Contains(mem.BbUserId)).ToList();
+                    var canvasUser = membersCurrentSection
+                        .SelectMany(mcs => mcs.students).FirstOrDefault(stu => stu.id.ToString() == mem.BbUserId);
+                    var membersCurrentSectionId = membersCurrentSection.FirstOrDefault().id;
+                    var membersNewWorkGroup =
+                        workgroups.FirstOrDefault(wg3 => wg3.BbWgId == membersCurrentSectionId.ToString());
+                    var membersNewWorkGroupId = membersNewWorkGroup.WgId;
+
+
+                    if (canvasUser.enrollments.FirstOrDefault().enrollment_state != "active")
+                    {
+                        mem.RemoveEnrollment = true;
+                        return;
+                    }
+
+                    if (membersCurrentWorkGroupId != membersNewWorkGroupId)
+                    {
+                        mem.RemoveEnrollment = true;
+                        mem.IsMoving = true;
+
+                        var newWorkGroupMemberReconcile = new WorkgroupMemberReconcile
+                        {
+                            StudentId = mem.StudentId,
+                            BbUserId = mem.BbUserId,
+                            WorkGroupId = membersNewWorkGroupId,
+                            IsDeleted = false,
+                            IsMoving = true,
+                            NewEnrollment = true,
+                            RemoveEnrollment = false,
+                            HasChildren = false,
+                            CanvasUser = mem.CanvasUser
+                        };
+
+                        membersNewWorkGroup.Members.Add(newWorkGroupMemberReconcile);
+
+                        //mem.IsMoving = true;
+                        //mem.StudentOnTheMoveReconcile = new StudentOnTheMoveReconcile
+                        //{
+                        //    StudentId = mem.StudentId,
+                        //    HasChildren = mem.HasChildren,
+                        //    CourseId = crseId,
+                        //    FromWorkGroupId = membersCurrentWorkGroupId,
+                        //    ToWorkGroupId = membersNewWorkGroupId
+                        //};
+                    }
+
+
+                });
+            }
+
+
+            return courseWithWorkGroups;
         }
 
         private static UserReconcile CreateUserReconcile(CanvasEnrollment canvasEnrollment, int facultyId)
@@ -162,44 +329,6 @@ namespace Ecat.Business.Business
 
         }
 
-        public static List<WorkGroup> ReconcileCanvasCourseSections(List<CanvasSection> canvasSectionsReturned, ICollection<WorkGroup> workGroups, int crseId, WorkGroupModel workGroupModel, int facId, Guid reconResultId)
-        {
-            var newWorkGroups = new List<WorkGroup>();
-            //Compare Canvas Id to Workgroup BBgroupId
-
-            canvasSectionsReturned.ForEach(csr =>
-            {
-                var sectionAlreadyInEcat = workGroups.SingleOrDefault(wg => wg.BbGroupId == csr.id.ToString());
-
-                if (sectionAlreadyInEcat == null)
-                {
-                    var newGroup = new WorkGroup()
-                    {
-                        BbGroupId = csr.id.ToString(),
-                        DefaultName = csr.name,
-                        CourseId = crseId,
-                        WgModelId = workGroupModel.Id,
-                        AssignedSpInstrId = workGroupModel.AssignedSpInstrId,
-                        MpCategory = MpGroupCategory.Wg1,
-                        MpSpStatus = MpSpStatus.Created,
-                        ModifiedById = facId,
-                        ModifiedDate = DateTime.Now,
-                        ReconResultId = reconResultId
-                    };
-
-                    var nameNum = csr.name.Split(' ')[1];
-                    if (!nameNum.StartsWith("0") && nameNum.Length == 1)
-                    {
-                        nameNum = "0" + nameNum;
-                    }
-                    newGroup.GroupNumber = nameNum;
-
-                    newWorkGroups.Add(newGroup);
-                }
-            });
-
-
-            return newWorkGroups;
-        }
+        
     }
 }
