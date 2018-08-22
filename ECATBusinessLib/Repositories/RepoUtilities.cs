@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,56 +13,56 @@ namespace Ecat.Business.Repositories
     public class RepoUtilities
     {
 
-        public static void RemoveAllGroupMembershipData(EFContextProvider<EcatContext> ctxManager, int studentId, int workGroupId )
+        public static async Task RemoveAllGroupMembershipData(EFContextProvider<EcatContext> ctxManager, int studentId, int workGroupId)
         {
 
-            var authorCommentFlags = ctxManager.Context.StudSpCommentFlags
+            var authorCommentFlags = await ctxManager.Context.StudSpCommentFlags
                                                    .Where(sscf => sscf.AuthorPersonId == studentId)
-                                                   .Where(sscf => sscf.WorkGroupId == workGroupId);
+                                                   .Where(sscf => sscf.WorkGroupId == workGroupId).ToListAsync();
 
-            var recipientCommentFlags = ctxManager.Context.StudSpCommentFlags
+            var recipientCommentFlags = await ctxManager.Context.StudSpCommentFlags
                                         .Where(sscf => sscf.RecipientPersonId == studentId)
-                                        .Where(sscf => sscf.WorkGroupId == workGroupId);
+                                        .Where(sscf => sscf.WorkGroupId == workGroupId).ToListAsync();
 
-            var authorOfComments = ctxManager.Context.StudSpComments
+            var authorOfComments = await ctxManager.Context.StudSpComments
                                     .Where(ssc => ssc.AuthorPersonId == studentId)
-                                    .Where(ssc => ssc.WorkGroupId == workGroupId);
+                                    .Where(ssc => ssc.WorkGroupId == workGroupId).ToListAsync();
 
-            var recipientOfComments = ctxManager.Context.StudSpComments
+            var recipientOfComments = await ctxManager.Context.StudSpComments
                                         .Where(ssc => ssc.RecipientPersonId == studentId)
-                                        .Where(ssc => ssc.WorkGroupId == workGroupId);
+                                        .Where(ssc => ssc.WorkGroupId == workGroupId).ToListAsync();
 
-            var assesseeSpResponses = ctxManager.Context.SpResponses
+            var assesseeSpResponses = await ctxManager.Context.SpResponses
                                     .Where(sr => sr.AssesseePersonId == studentId)
-                                    .Where(sr => sr.WorkGroupId == workGroupId);
+                                    .Where(sr => sr.WorkGroupId == workGroupId).ToListAsync();
 
-            var assessorSpResponses = ctxManager.Context.SpResponses
+            var assessorSpResponses = await ctxManager.Context.SpResponses
                                         .Where(sr => sr.AssessorPersonId == studentId)
-                                        .Where(sr => sr.WorkGroupId == workGroupId);
+                                        .Where(sr => sr.WorkGroupId == workGroupId).ToListAsync();
 
-            var assesseeStratResponses = ctxManager.Context.SpStratResponses
+            var assesseeStratResponses = await ctxManager.Context.SpStratResponses
                                             .Where(ssr => ssr.AssesseePersonId == studentId)
-                                            .Where(ssr => ssr.WorkGroupId == workGroupId);
+                                            .Where(ssr => ssr.WorkGroupId == workGroupId).ToListAsync();
 
-            var assessorStratResponses = ctxManager.Context.SpStratResponses
+            var assessorStratResponses = await ctxManager.Context.SpStratResponses
                                             .Where(ssr => ssr.AssessorPersonId == studentId)
-                                            .Where(ssr => ssr.WorkGroupId == workGroupId);
+                                            .Where(ssr => ssr.WorkGroupId == workGroupId).ToListAsync();
 
-            var facSpResponses = ctxManager.Context.FacSpResponses
+            var facSpResponses = await ctxManager.Context.FacSpResponses
                                             .Where(fsr => fsr.AssesseePersonId == studentId)
-                                            .Where(fsr => fsr.WorkGroupId == workGroupId);
+                                            .Where(fsr => fsr.WorkGroupId == workGroupId).ToListAsync();
 
-            var facStratResponse = ctxManager.Context.FacStratResponses
+            var facStratResponse = await ctxManager.Context.FacStratResponses
                                             .Where(fsr => fsr.AssesseePersonId == studentId)
-                                            .Where(fsr => fsr.WorkGroupId == workGroupId);
+                                            .Where(fsr => fsr.WorkGroupId == workGroupId).ToListAsync();
 
-            var facComments = ctxManager.Context.FacSpComments
+            var facComments = await ctxManager.Context.FacSpComments
                                             .Where(fsc => fsc.RecipientPersonId == studentId)
-                                            .Where(fsc => fsc.WorkGroupId == workGroupId);
+                                            .Where(fsc => fsc.WorkGroupId == workGroupId).ToListAsync();
 
-            var facCommentsFlag = ctxManager.Context.FacSpCommentFlags
+            var facCommentsFlag = await ctxManager.Context.FacSpCommentFlags
                                             .Where(fscf => fscf.RecipientPersonId == studentId)
-                                            .Where(fscf => fscf.WorkGroupId == workGroupId);
+                                            .Where(fscf => fscf.WorkGroupId == workGroupId).ToListAsync();
 
 
             if (authorOfComments.Any())
@@ -122,6 +123,7 @@ namespace Ecat.Business.Repositories
             {
                 ctxManager.Context.FacSpCommentFlags.RemoveRange(facCommentsFlag);
             }
+
         }
     }
 }

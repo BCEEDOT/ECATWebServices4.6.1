@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
@@ -352,7 +353,7 @@ namespace Ecat.Business.Repositories
 
             if (workGroupsWithMembersToDelete.Any())
             {
-                groupMemReconResults = await RemoveWorkgroupMembers(groupMemReconResults, workGroupsWithMembersToDelete);
+                groupMemReconResults = await RemoveWorkgroupMembers(groupMemReconResults, workGroupsWithMembersToDelete, courseId);
             }
 
             if (sectionsWithMembersToAdd.Any())
@@ -363,31 +364,70 @@ namespace Ecat.Business.Repositories
             return groupMemReconResults;
         }
 
-        private async Task<List<GroupMemReconResult>> RemoveWorkgroupMembers(List<GroupMemReconResult> groupMemReconResults, List<WorkgroupReconcile> workGroupsWithMembersToDelete)
+        private async Task<List<GroupMemReconResult>> RemoveWorkgroupMembers(List<GroupMemReconResult> groupMemReconResults, List<WorkgroupReconcile> workGroupsWithMembersToDelete, int courseId)
         {
 
+            //Only Unpublished workgroups are in this loop
             foreach (var wg in workGroupsWithMembersToDelete)
             {
-                var groupMemReconResult = groupMemReconResults.First(gmrr => gmrr.WorkGroupId == wg.WgId);
+             
+                var bc1GroupMemReconResult = groupMemReconResults.First(gmrr => gmrr.WorkGroupId == wg.WgId && gmrr.GroupType == MpGroupCategory.Wg1);
                 var memberIdList = wg.Members.Where(mem => mem.RemoveEnrollment).Select(mem => mem.StudentId).ToList();
+
+                //var exisitingStudentInGroup = await
+                //    ctxManager.Context.StudentInGroups.Where(sig =>
+                //            memberIdList.Contains(sig.StudentId) &&
+                //            sig.WorkGroupId == wg.WgId)
+                //        .ToListAsync();
 
                 var exisitingStudentInGroup = await
                     ctxManager.Context.StudentInGroups.Where(sig =>
                             memberIdList.Contains(sig.StudentId) &&
-                            sig.WorkGroupId == wg.WgId)
+                            sig.CourseId == courseId)
+                        .Include(sig => sig.WorkGroup)
                         .ToListAsync();
+
 
                 foreach (var csig in exisitingStudentInGroup)
                 {
-                    RepoUtilities.RemoveAllGroupMembershipData(ctxManager, csig.StudentId, csig.WorkGroupId);
+                    if (csig.WorkGroup.MpSpStatus == MpSpStatus.Published) continue;
+                  
+                    if (csig.WorkGroup.MpCategory != MpGroupCategory.Wg1)
+                    {
+                        var nonBc1GroupMemReconResult = groupMemReconResults.FirstOrDefault(gmrr => gmrr.WorkGroupId == csig.WorkGroupId);
+
+                        if (nonBc1GroupMemReconResult == null)
+                        {
+                            nonBc1GroupMemReconResult = new GroupMemReconResult
+                            {
+                                Id = Guid.NewGuid(),
+                                AcademyId = Faculty?.AcademyId,
+                                CourseId = courseId,
+                                WorkGroupId = csig.WorkGroup.WorkGroupId,
+                                WorkGroupName = csig.WorkGroup.DefaultName,
+                                GroupType = csig.WorkGroup.MpCategory,
+                                NumRemoved = 0,
+                                GroupMembers = new List<CrseStudentInGroup>()
+                            };
+
+                            groupMemReconResults.Add(nonBc1GroupMemReconResult);
+                        }
+
+                        nonBc1GroupMemReconResult.NumRemoved += 1;
+
+                    }
+                    else
+                    {
+                        bc1GroupMemReconResult.NumRemoved += 1;
+                    }
+
+                    await RepoUtilities.RemoveAllGroupMembershipData(ctxManager, csig.StudentId, csig.WorkGroupId);
                     ctxManager.Context.Entry(csig).State = System.Data.Entity.EntityState.Deleted;
 
                 }
 
-                groupMemReconResult.NumRemoved = exisitingStudentInGroup.Count;
             }
            
-
             await ctxManager.Context.SaveChangesAsync();
 
             return groupMemReconResults;
@@ -537,33 +577,85 @@ namespace Ecat.Business.Repositories
 
             var stusToRemove = ecatCourse.StudentsToReconcile.Where(stuToReconcile => stuToReconcile.RemoveEnrollment)
                 .Select(stuToReconcile => stuToReconcile).ToList();
-
             var facultyToRemove = ecatCourse.FacultyToReconcile.Where(facToReconcile => facToReconcile.RemoveEnrollment)
                 .Select(facToReconcile => facToReconcile).ToList();
 
-            stusToRemove.ForEach(stuToRemove =>
+            foreach (var stuToRemove in stusToRemove)
             {
+
                 var studentInCourse = new StudentInCourse
                 {
                     StudentPersonId = stuToRemove.PersonId,
                     CourseId = ecatCourse.Course.Id
                 };
 
-                if (stuToRemove.FlagDeleted)
+                ctxManager.Context.StudentInCourses.Attach(studentInCourse);
+
+                if (stuToRemove.CanDelete)
                 {
-                    studentInCourse.DeletedDate = DateTime.Now;
-                    studentInCourse.DeletedById = Faculty.PersonId;
-                    studentInCourse.IsDeleted = true;
-                    ctxManager.Context.Entry(studentInCourse).State = EntityState.Modified;
-                    return;
+                                   
+                    ctxManager.Context.Entry(studentInCourse).State = EntityState.Deleted;
+                    continue;
                 }
 
-                //TODO: Clean up sp data if groups member is in are not published
 
-                ctxManager.Context.Entry(studentInCourse).State = EntityState.Deleted;
+                studentInCourse.DeletedDate = DateTime.Now;
+                studentInCourse.DeletedById = Faculty.PersonId;
+                studentInCourse.IsDeleted = true;
+
+
                 memRemovedIds.Add(stuToRemove.PersonId);
 
-            });
+
+                //var studentsGroupEnrollments = await ctxManager.Context.StudentInGroups.Where(sig =>
+                //        sig.StudentId == stuToRemove.PersonId &&
+                //        sig.CourseId == ecatCourse.Course.Id)
+                //    .Include(sig => sig.StudentInCourse)
+                //    .Include(sig => sig.WorkGroup).ToListAsync();
+
+                //var studentsUnPublishedGroups =
+                //    studentsGroupEnrollments.Where(sge => sge.WorkGroup.MpSpStatus != MpSpStatus.Published).ToList();
+
+                //var studentHasPublishedGroups =
+                //studentsGroupEnrollments.Any(sge => sge.WorkGroup.MpSpStatus == MpSpStatus.Published);
+
+                //if (studentsGroupEnrollments.Any())
+                //{
+                //    ctxManager.Context.Entry(studentsGroupEnrollments[0].StudentInCourse).State = EntityState.Deleted;
+                //}
+                //else
+                //{
+                //    var studentInCourse = new StudentInCourse
+                //    {
+                //        StudentPersonId = stuToRemove.PersonId,
+                //        CourseId = ecatCourse.Course.Id
+                //    };
+
+                //    ctxManager.Context.StudentInCourses.Attach(studentInCourse);
+                //    ctxManager.Context.Entry(studentInCourse).State = EntityState.Deleted;
+                //}
+
+                //if (studentsUnPublishedGroups.Any())
+                //{
+                //    foreach (var sig in studentsUnPublishedGroups)
+                //    {
+                //        await RepoUtilities.RemoveAllGroupMembershipData(ctxManager, sig.StudentId, sig.WorkGroupId);
+                //        ctxManager.Context.Entry(sig).State = EntityState.Deleted;
+                //    }
+
+                //}
+
+                //if (studentHasPublishedGroups)
+                //{
+
+                //    studentsGroupEnrollments[0].StudentInCourse.DeletedDate = DateTime.Now;
+                //    studentsGroupEnrollments[0].StudentInCourse.DeletedById = Faculty.PersonId;
+                //    studentsGroupEnrollments[0].StudentInCourse.IsDeleted = true;
+                //    memRemovedIds.Add(stuToRemove.PersonId);
+                //    break;
+                //}
+
+            };
 
             facultyToRemove.ForEach(facToRemove =>
             {
@@ -668,6 +760,7 @@ namespace Ecat.Business.Repositories
                             {
                                 PersonId = userWithoutProfile.PersonId
                             };
+
                             ctxManager.Context.Students.Add(userWithoutProfile.Student);
                             break;
                     }            

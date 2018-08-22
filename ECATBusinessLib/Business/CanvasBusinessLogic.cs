@@ -310,6 +310,7 @@ namespace Ecat.Business.Business
                 userReconcile.RemoveEnrollment = true;
        
                 //If Member has group enrollments set isDeleted true in StudentInCourse 
+                //This will always be true unless student is removed from all groups and then this is run again. 
                 userReconcile.FlagDeleted = !userReconcile.CanDelete;
 
             });
