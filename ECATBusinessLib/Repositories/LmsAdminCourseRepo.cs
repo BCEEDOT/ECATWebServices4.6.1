@@ -310,6 +310,12 @@ namespace Ecat.Business.Repositories
 
             var groupMemReconResults = new List<GroupMemReconResult>();
             var workGroups = courseWithWorkGroups.WorkGroups.ToList();
+
+            if (!workGroups.Any())
+            {
+                return groupMemReconResults;
+            }
+
             workGroups.ForEach(wg =>
             {
                 var newGroupMemReconResult = new GroupMemReconResult

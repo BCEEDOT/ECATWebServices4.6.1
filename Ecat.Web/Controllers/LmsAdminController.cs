@@ -120,6 +120,18 @@ namespace Ecat.Web.Controllers
 
         }
 
+        [HttpGet]
+        public async Task<SaveGradeResult> SyncCanvasGrades(int crseId)
+        {
+            var token = await _lmsTokenRepo.CheckCanvasTokenInfo();
+            var result = new SaveGradeResult();
+
+            if (token) return await _lmsGroupOps.SyncCanvasGrades(crseId);
+
+            result.HasToken = false;
+            return result;
+        }
+
         //[HttpGet]
         //public async Task<GroupReconResult> PollCanvasSections(int courseId)
         //{
@@ -138,7 +150,7 @@ namespace Ecat.Web.Controllers
         //{
         //    var token = await _lmsTokenRepo.CheckCanvasTokenInfo();
         //    var result = new List<GroupMemReconResult>();
-            
+
 
         //    if (token) return await _lmsGroupOps.PollCanvasSectionMembers(courseId);
 

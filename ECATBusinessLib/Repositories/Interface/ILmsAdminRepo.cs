@@ -44,7 +44,7 @@ namespace Ecat.Business.Repositories.Interface
         //Task<GroupMemReconResult> ReconcileGroupMembers(int wgId);
         //Task<List<GroupMemReconResult>> ReconcileGroupMembers(int courseId, string groupCategory);
         //Task<List<GroupMemReconResult>> ReconcileAllGroupMembers(int courseId);
-        //Task<SaveGradeResult> SyncBbGrades(int crseId, string wgCategory);
+        Task<SaveGradeResult> SyncCanvasGrades(int crseId);
         //Task<List<GroupMemReconResult>> PollCanvasSectionMembers(int workGroupId);
     }
 

@@ -10,6 +10,7 @@ namespace Ecat.Data.Models.Common
         public bool Success { get; set; }
         public int NumOfStudents { get; set; }
         public int SentScores { get; set; }
+        public bool HasToken { get; set; }
         public int ReturnedScores { get; set; }
         public string Message { get; set; }
     }

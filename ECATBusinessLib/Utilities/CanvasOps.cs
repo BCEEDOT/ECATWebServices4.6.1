@@ -34,6 +34,18 @@ namespace Ecat.Business.Utilities
 
         }
 
+        public static async Task<HttpResponseMessage> PostGrades(string gradeData, string apiResource, CanvasLogin canvasLogin)
+        {
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Add("Authorization", "Bearer " + canvasLogin.AccessToken);
+            var content = new StringContent(gradeData, Encoding.UTF8, "application/json");
+
+            var apiAddr = new Uri(canvasApiUrl + apiResource);
+
+            return await client.PostAsync(apiAddr, content);
+        }
+
         //public static List<HttpResponseMessage> ProcessRequestsInParallel(List<string> apiResourceCalls, int facultyId, ReconcileResult reconResult, EFContextProvider<EcatContext> ctxManager)
         //{
         //    var exceptions = new ConcurrentQueue<Exception>();
