@@ -352,6 +352,7 @@ namespace Ecat.Business.Guards
                                      .Contains(grp.WorkGroupId) && grp.GroupMembers.Where(mem => !mem.IsDeleted).Count() > 0)
                                      .Select(wg => wg.WorkGroupId);
 
+
             //var publishResultMap = WorkGroupPublish.Publish(wgSaveMap, grpsWithMemsIds, loggedInUser.PersonId, ctxManager);
 
             //Why is this commented out? It is not commented out the FacultyGuardian
