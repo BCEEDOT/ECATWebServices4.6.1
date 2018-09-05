@@ -161,7 +161,7 @@ namespace Ecat.Business.Repositories
                 case MpInstituteRoleId.Faculty:
                     user.Faculty = user.Faculty ?? new ProfileFaculty();
                     //user.Faculty.IsCourseAdmin = userIsCourseAdmin;
-                    user.Faculty.AcademyId = parsedRequest.Parameters["custom_ecat_school"];
+                    //user.Faculty.AcademyId = parsedRequest.Parameters["custom_ecat_school"];
                     break;
                 case MpInstituteRoleId.Designer:
                     //user.Designer = user.Designer ?? new ProfileDesigner();
