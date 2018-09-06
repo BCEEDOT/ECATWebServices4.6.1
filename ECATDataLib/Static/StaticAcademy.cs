@@ -90,6 +90,19 @@ namespace Ecat.Data.Static
            CanvasAcctId = 1
        };
 
+        public static Academy Ecatals
+            => new Academy
+            {
+                Id = "ECAT ALS",
+                LongName = "ECAT Developer ALS",
+                ShortName = "ECAT ALS",
+                MpEdLevel = MpEdLevel.Als,
+                Base = AcademyBase.Gunter,
+                //BbCategoryId = MpAcadCat.ECATILE,
+                //ParentBbCategoryId = MpAcadCat.NCOA,
+                CanvasAcctId = 177
+            };
+
         public static Academy Ecatsncoa
        => new Academy
        {

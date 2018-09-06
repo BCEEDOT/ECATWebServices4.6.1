@@ -88,11 +88,14 @@ namespace Ecat.Business.Repositories
 
         public async Task<Person> ProcessLtiUser(LtiRequest parsedRequest)
         {
+
+            var   canvasUserId = parsedRequest.Parameters["custom_canvas_user_id"];
+ 
             var user = await ctxManager.Context.People
              .Include(s => s.Security)
              .Include(s => s.Faculty)
              .Include(s => s.Student)
-             .SingleOrDefaultAsync(person => person.BbUserId == parsedRequest.UserId);
+             .SingleOrDefaultAsync(person => person.BbUserId == canvasUserId);
 
             var emailChecker = new ValidEmailChecker();
             if (user != null)
@@ -177,11 +180,13 @@ namespace Ecat.Business.Repositories
             user.LastName = parsedRequest.LisPersonNameFamily;
             user.FirstName = parsedRequest.LisPersonNameGiven;
 
-            if (parsedRequest.ToolConsumerInfoProductFamilyCode == "canvas") {
-                user.BbUserId = parsedRequest.Parameters["custom_canvas_user_id"];
-            } else {
-                user.BbUserId = parsedRequest.UserId;
-            }
+            //if (parsedRequest.ToolConsumerInfoProductFamilyCode == "canvas") {
+            //    user.BbUserId = parsedRequest.Parameters["custom_canvas_user_id"];
+            //} else {
+            //    user.BbUserId = parsedRequest.UserId;
+            //}
+
+            user.BbUserId = parsedRequest.Parameters["custom_canvas_user_id"];
 
             user.ModifiedDate = DateTime.Now;
 
