@@ -27,6 +27,7 @@ using Ecat.Data.Models.Canvas;
 using Ecat.Business.Repositories.Interface;
 using Ecat.Data.Static;
 using Ecat.Business.Guards;
+using Elmah;
 using Newtonsoft.Json.Linq;
 using EntityState = System.Data.Entity.EntityState;
 
@@ -122,6 +123,9 @@ namespace Ecat.Business.Repositories
         //New Canvas API Calls
         public async Task<CourseReconResult> PollCanvasCourses()
         {
+
+            ErrorSignal.FromCurrentContext().Raise(new Elmah.ApplicationException("It is in CheckCanvasTokenInfo", new Exception("7")));
+
             var academy = new Academy();
             if (Faculty != null)
             {
@@ -133,7 +137,7 @@ namespace Ecat.Business.Repositories
             }
 
             var reconResult = new CourseReconResult();
-
+            
             var canvasLogin = await ctxManager.Context.CanvasLogins.Where(cl => cl.PersonId == Faculty.PersonId)
                 .SingleOrDefaultAsync();
 
@@ -149,40 +153,53 @@ namespace Ecat.Business.Repositories
 
             try
             {
+                ErrorSignal.FromCurrentContext().Raise(new Elmah.ApplicationException("It is in CheckCanvasTokenInfo", new Exception("8")));
                 response = await CanvasOps.GetResponse(Faculty.PersonId, apiResource, canvasLogin);
                 reconResult.HasToken = true;
+                ErrorSignal.FromCurrentContext().Raise(new Elmah.ApplicationException("It is in CheckCanvasTokenInfo", new Exception("11")));
             }
-            catch (HttpRequestException e)
+            catch (Exception e)
             {
-                var exception = e;
+                throw new Exception(e.Message);
             }
 
-            var apiResponse = await response.Content.ReadAsStringAsync();
-
-            var coursesReturned = Newtonsoft.Json.JsonConvert.DeserializeObject<List<CanvasCourse>>(apiResponse);
-
-            if (coursesReturned == null || coursesReturned.Count == 0)
+            try
             {
+
+                ErrorSignal.FromCurrentContext().Raise(new Elmah.ApplicationException("It is in CheckCanvasTokenInfo", new Exception("12")));
+
+                var apiResponse = await response.Content.ReadAsStringAsync();
+
+                var coursesReturned = Newtonsoft.Json.JsonConvert.DeserializeObject<List<CanvasCourse>>(apiResponse);
+
+                if (coursesReturned == null || coursesReturned.Count == 0)
+                {
+                    return reconResult;
+                }
+
+                var existingCourses =
+                    await ctxManager.Context.Courses.Where(c => c.AcademyId == academy.Id).ToListAsync();
+
+                var reconCourses = CanvasBusinessLogic.ReconcileCourses(coursesReturned, existingCourses, academy.Id);
+
+                if (reconCourses.Any())
+                {
+                    reconCourses.ForEach(course => ctxManager.Context.Courses.Add((course)));
+                    await ctxManager.Context.SaveChangesAsync();
+                }
+
+                reconResult.NumAdded = reconCourses.Count();
+                reconResult.Id = Guid.NewGuid();
+                reconResult.AcademyId = Faculty?.AcademyId;
+                reconResult.Courses = reconCourses;
+
                 return reconResult;
             }
 
-            var existingCourses =
-                await ctxManager.Context.Courses.Where(c => c.AcademyId == academy.Id).ToListAsync();
-
-            var reconCourses = CanvasBusinessLogic.ReconcileCourses(coursesReturned, existingCourses, academy.Id);
-
-            if (reconCourses.Any())
+            catch (Exception e)
             {
-                reconCourses.ForEach(course => ctxManager.Context.Courses.Add((course)));
-                await ctxManager.Context.SaveChangesAsync();
+                throw new Exception(e.Message);
             }
-
-            reconResult.NumAdded = reconCourses.Count();
-            reconResult.Id = Guid.NewGuid();
-            reconResult.AcademyId = Faculty?.AcademyId;
-            reconResult.Courses = reconCourses;
-
-            return reconResult;
         }
 
         public async Task<CourseDetailsReconResult> PollCanvasCourseDetails(int courseId)
@@ -255,7 +272,7 @@ namespace Ecat.Business.Repositories
             var facultyApiResult = await facultyResponse.Result.Content.ReadAsStringAsync();
             var facultyEnrollments = Newtonsoft.Json.JsonConvert.DeserializeObject<List<CanvasEnrollment>>(facultyApiResult);
 
-            var studentEnrollments = sections.SelectMany(srr => srr.students).ToList();
+            var studentEnrollments = sections.Where(srr => srr.students != null).SelectMany(srr => srr.students).ToList();
 
             reconResult.CourseMemberReconResult = await SyncCanvasCourseEnrollments(courseId, studentEnrollments, facultyEnrollments);
             reconResult.MemReconSuccess = true;

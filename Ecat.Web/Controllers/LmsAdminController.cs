@@ -110,14 +110,23 @@ namespace Ecat.Web.Controllers
         [HttpGet]
         public async Task<CourseReconResult> PollCanvasCourses()
         {
-            var token = await _lmsTokenRepo.CheckCanvasTokenInfo();
             var result = new CourseReconResult();
 
-            if (token) return await _lmsCourseOps.PollCanvasCourses();
+            try
+            {
+                var token = await _lmsTokenRepo.CheckCanvasTokenInfo();
+                if (token) return await _lmsCourseOps.PollCanvasCourses();
 
-            result.HasToken = false;
-            return result;
+                result.HasToken = false;
+                return result;
 
+            }
+
+            catch(Exception e)
+            {
+                throw  new Exception(e.Message);
+            }
+        
         }
 
         [HttpGet]

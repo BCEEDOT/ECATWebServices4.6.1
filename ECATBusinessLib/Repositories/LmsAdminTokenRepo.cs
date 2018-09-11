@@ -8,9 +8,12 @@ using System.Threading.Tasks;
 using Ecat.Business.Repositories.Interface;
 using Ecat.Data.Contexts;
 using System.Configuration;
+using System.Globalization;
 using System.Runtime.Remoting.Channels;
+using System.ServiceModel.Channels;
 using Ecat.Data.Models.Canvas;
 using Ecat.Data.Models.User;
+using Elmah;
 
 namespace Ecat.Business.Repositories
 {
@@ -55,6 +58,8 @@ namespace Ecat.Business.Repositories
         public async Task<bool> CheckCanvasTokenInfo()
         {
             var canvLogin = await ecatContext.CanvasLogins.Where(cl => cl.PersonId == Faculty.PersonId).SingleOrDefaultAsync();
+
+            ErrorSignal.FromCurrentContext().Raise(new Elmah.ApplicationException("It is in CheckCanvasTokenInfo", new Exception("1")));
 
             if (canvLogin?.RefreshToken == null)
             {
@@ -146,6 +151,8 @@ namespace Ecat.Business.Repositories
         {
             var canvLogin = await ecatContext.CanvasLogins.Where(cl => cl.PersonId == Faculty.PersonId).SingleOrDefaultAsync();
 
+            ErrorSignal.FromCurrentContext().Raise(new Elmah.ApplicationException("It is in CheckCanvasTokenInfo", new Exception("2")));
+
             if (canvLogin?.AccessToken == null)
             {
                 //there isn't a time where we will have a refresh token but no access token unless something weird happened, so just have the user re-auth with canvas
@@ -159,9 +166,13 @@ namespace Ecat.Business.Repositories
             //Datetime does not accept nullable - If null always return time greater than now plus 3 
             var tokenExpires = canvLogin.TokenExpires ?? DateTime.Now;
 
+            ErrorSignal.FromCurrentContext().Raise(new Elmah.ApplicationException("It is in CheckCanvasTokenInfo", new Exception("3")));
+            ErrorSignal.FromCurrentContext().Raise(new Elmah.ApplicationException("It is in CheckCanvasTokenInfo", new Exception(tokenExpires.ToString(CultureInfo.CurrentCulture))));
+
 
             if (DateTime.Compare(tokenExpires, DateTime.Now.AddMinutes(3)) < 0 )
             {
+                ErrorSignal.FromCurrentContext().Raise(new Elmah.ApplicationException("It is in CheckCanvasTokenInfo", new Exception("4")));
                 if (canvLogin.RefreshToken == null)
                 {
                     //have an expired access token, but no refresh token
@@ -177,8 +188,9 @@ namespace Ecat.Business.Repositories
                     new KeyValuePair<string, string>("redirect_uri", redirectUri),
                     new KeyValuePair<string, string>("refresh_token", canvLogin.RefreshToken)
                 });
-
+                ErrorSignal.FromCurrentContext().Raise(new Elmah.ApplicationException("It is in CheckCanvasTokenInfo", new Exception("5")));
                 var response = await client.PostAsync(authAddr, content);
+                ErrorSignal.FromCurrentContext().Raise(new Elmah.ApplicationException("It is in CheckCanvasTokenInfo", new Exception("6")));
                 if (!response.IsSuccessStatusCode)
                 {
                     //for some reason our refresh token isn't working

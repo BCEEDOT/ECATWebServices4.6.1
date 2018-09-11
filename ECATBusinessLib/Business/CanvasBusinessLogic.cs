@@ -102,7 +102,7 @@ namespace Ecat.Business.Business
 
         public static WorkgroupAndMemberReconcile ReconcileGroupMembers(int crseId, WorkgroupAndMemberReconcile courseWithWorkGroups, List<CanvasSection> canvasSectionsReturned)
         {
-            var canvasMembers = canvasSectionsReturned.SelectMany(csr => csr.students).ToList();
+            var canvasMembers = canvasSectionsReturned.Where(csr => csr.students != null).SelectMany(csr => csr.students).ToList();
             var workgroupMembers = courseWithWorkGroups.WorkGroups.SelectMany(wg => wg.Members).ToList();
             //It should be safe to use workgroups in database as sections should already be reconcilied. 
             var workgroups = courseWithWorkGroups.WorkGroups.ToList();
@@ -116,6 +116,7 @@ namespace Ecat.Business.Business
             var membersInBoth = workgroupMembers.Where(wgMember =>
                 canvasMembers.Select(cm => cm.id.ToString()).ToList().Contains(wgMember.BbUserId)).ToList();
 
+
             if (membersInSectionNotInAnyWorkgroup.Any())
             {
                 membersInSectionNotInAnyWorkgroup.ForEach(mem =>
@@ -124,12 +125,14 @@ namespace Ecat.Business.Business
                     //var membersWorkGroup = workgroups
                     //    .Where(wg => wg.Members.Select(mem2 => mem2.BbUserId).Contains(mem.id.ToString())).ToList();
 
-                    var membersSection = canvasSectionsReturned
+                    var membersSection = canvasSectionsReturned.Where(section => section.students != null)
                         .Where(section => section.students.Select(stu => stu.id).Contains(mem.id)).ToList().FirstOrDefault();
 
                     var membersWorkgroup = workgroups.Where(wg => wg.BbWgId == membersSection.id.ToString()).ToList().FirstOrDefault();
 
                     if (mem.enrollments.First().enrollment_state != "active") return;
+
+                    if (mem.enrollments.Any(enrollment => enrollment.enrollment_state != "active")) return;
 
                     var newWorkgroupMemberReconcile = new WorkgroupMemberReconcile
                     {
@@ -172,7 +175,7 @@ namespace Ecat.Business.Business
 
                     //var membersCurrentWorkGroup = workgroups.FirstOrDefault(wg => wg.WgId == mem.WorkGroupId);
                     var membersCurrentWorkGroupId = mem.WorkGroupId;
-                    var membersCurrentSection = canvasSectionsReturned.Where(csr =>
+                    var membersCurrentSection = canvasSectionsReturned.Where(csr => csr.students != null).Where(csr =>
                         csr.students.Select(stu => stu.id.ToString()).ToList().Contains(mem.BbUserId)).ToList();
                     var canvasUser = membersCurrentSection
                         .SelectMany(mcs => mcs.students).FirstOrDefault(stu => stu.id.ToString() == mem.BbUserId);

@@ -38,7 +38,7 @@ namespace Ecat.Web
             #endregion
 
             #region Service-wide logging
-            //config.Services.Add(typeof(IExceptionLogger), new ElmahExceptionLogger());
+            config.Services.Add(typeof(IExceptionLogger), new ElmahExceptionLogger());
             #endregion
 
             var cors = new EnableCorsAttribute("http://localhost:4200, http://ecat.ngrok.io", "*","*");

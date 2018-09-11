@@ -21,6 +21,7 @@ namespace Ecat.Data.Static
             {Keesler.Id, Keesler },
             {Ecat.Id, Ecat},
             {Ecatncoa.Id, Ecatncoa},
+            {Ecatals.Id, Ecatals },
             {Ecatsncoa.Id, Ecatsncoa},
             {Peterson.Id, Peterson},
             {Kapaun.Id, Kapaun},

@@ -45,8 +45,20 @@ namespace Ecat.Web.Controllers
             }
 
             var ltiRequest = new LtiRequest();
-
             ltiRequest.ParseRequest(Request);
+
+            //TODO: Update for PROD
+            var secret = "4e8b10d86e214a0c9a19c81f4b5587fc";
+            var signature = ltiRequest.Parameters["oauth_signature"];
+
+            bool signatureVerified = (LtiLibrary.Core.OAuth.OAuthUtility.GenerateSignature(Request.HttpMethod, Request.Url, Request.Form, secret) == signature);
+
+            if (!signatureVerified)
+            {
+                ViewBag.Error = "There was a problem logging you into ECAT: ERROR CODE 66";
+                return View();
+            }
+
 
             var person = new Person();
 

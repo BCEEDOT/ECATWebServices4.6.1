@@ -13,6 +13,7 @@ using Breeze.ContextProvider.EF6;
 using Ecat.Data.Contexts;
 using Ecat.Data.Models.Canvas;
 using Ecat.Data.Models.Common;
+using Elmah;
 
 namespace Ecat.Business.Utilities
 {
@@ -24,13 +25,26 @@ namespace Ecat.Business.Utilities
 
         public static async Task<HttpResponseMessage> GetResponse(int facultyId, string apiResource, CanvasLogin canvasLogin)
         {
+            ErrorSignal.FromCurrentContext().Raise(new Elmah.ApplicationException("It is in CheckCanvasTokenInfo", new Exception("9")));
             var client = new HttpClient();
             client.DefaultRequestHeaders.Accept.Clear();
+            
             client.DefaultRequestHeaders.Add("Authorization", "Bearer " + canvasLogin.AccessToken);
 
-            var apiAddr = new Uri(canvasApiUrl + apiResource);
+            var apiAddr = new Uri(canvasApiUrl + apiResource, UriKind.Absolute);
 
-            return await client.GetAsync(apiAddr);
+            try
+            {
+                ErrorSignal.FromCurrentContext().Raise(new Elmah.ApplicationException("It is in CheckCanvasTokenInfo", new Exception("10")));
+                return await client.GetAsync(apiAddr);
+                
+            }
+
+            catch (Exception e)
+            {
+                var message = e.Message + " " + e.InnerException;
+                throw new Exception(message);
+            }
 
         }
 
