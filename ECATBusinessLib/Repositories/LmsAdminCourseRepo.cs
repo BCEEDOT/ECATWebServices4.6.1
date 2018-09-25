@@ -274,14 +274,45 @@ namespace Ecat.Business.Repositories
 
             var studentEnrollments = sections.Where(srr => srr.students != null).SelectMany(srr => srr.students).ToList();
 
-            reconResult.CourseMemberReconResult = await SyncCanvasCourseEnrollments(courseId, studentEnrollments, facultyEnrollments);
-            reconResult.MemReconSuccess = true;
+            try
+            {
+                reconResult.CourseMemberReconResult =
+                    await SyncCanvasCourseEnrollments(courseId, studentEnrollments, facultyEnrollments);
+                reconResult.MemReconSuccess = true;
 
-            reconResult.GroupReconResult = await SyncCanvasSections(courseId, sections);
-            reconResult.GroupReconSuccess = true;
+            }
 
-            reconResult.GroupMemReconResults = await SyncCanvasSectionMembers(courseId, sections);
-            reconResult.GroupMemReconSuccess = true;
+            catch (Exception e)
+            {
+                reconResult.ErrorMessage = e.Message;
+                reconResult.MemReconSuccess = false;
+            }
+
+            try
+            {
+                reconResult.GroupReconResult = await SyncCanvasSections(courseId, sections);
+                reconResult.GroupReconSuccess = true;
+            }
+
+            catch (Exception e)
+            {
+                reconResult.ErrorMessage = e.Message;
+                reconResult.GroupReconSuccess = false;
+            }
+
+            try
+            {
+                reconResult.GroupMemReconResults = await SyncCanvasSectionMembers(courseId, sections);
+                reconResult.GroupMemReconSuccess = true;
+            }
+
+            catch (Exception e)
+            {
+                reconResult.ErrorMessage = e.Message;
+                reconResult.GroupMemReconSuccess = false;
+            }
+
+
 
             return reconResult;
         }

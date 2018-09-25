@@ -102,7 +102,7 @@ namespace Ecat.Business.Business
 
         public static WorkgroupAndMemberReconcile ReconcileGroupMembers(int crseId, WorkgroupAndMemberReconcile courseWithWorkGroups, List<CanvasSection> canvasSectionsReturned)
         {
-            var canvasMembers = canvasSectionsReturned.Where(csr => csr.students != null).SelectMany(csr => csr.students).ToList();
+            var canvasMembers = canvasSectionsReturned.Where(csr => csr.students != null).SelectMany(csr => csr.students).ToList();          
             var workgroupMembers = courseWithWorkGroups.WorkGroups.SelectMany(wg => wg.Members).ToList();
             //It should be safe to use workgroups in database as sections should already be reconcilied. 
             var workgroups = courseWithWorkGroups.WorkGroups.ToList();
@@ -113,9 +113,20 @@ namespace Ecat.Business.Business
             var membersInWorkGroupNotInAnySection = workgroupMembers.Where(wgMember =>
                 !canvasMembers.Select(cm => cm.id.ToString()).ToList().Contains(wgMember.BbUserId)).ToList();
 
+            membersInSectionNotInAnyWorkgroup = membersInSectionNotInAnyWorkgroup.GroupBy(secMember => secMember.id)
+                .Select(secMember => secMember.First()).ToList();
+
+
+            //membersInWorkGroupNotInAnySection = membersInWorkGroupNotInAnySection
+            //    .GroupBy(secMember => secMember.BbUserId).Select(secMember => secMember.First()).ToList();
+
+
+            //fooArray.GroupBy(x => x.Id).Select(x => x.First());
+
+
+
             var membersInBoth = workgroupMembers.Where(wgMember =>
                 canvasMembers.Select(cm => cm.id.ToString()).ToList().Contains(wgMember.BbUserId)).ToList();
-
 
             if (membersInSectionNotInAnyWorkgroup.Any())
             {
@@ -130,9 +141,10 @@ namespace Ecat.Business.Business
 
                     var membersWorkgroup = workgroups.Where(wg => wg.BbWgId == membersSection.id.ToString()).ToList().FirstOrDefault();
 
-                    if (mem.enrollments.First().enrollment_state != "active") return;
+                    var membersEnrollments =
+                        membersInSectionNotInAnyWorkgroup.SelectMany(secMember => secMember.enrollments).Where(secMember => secMember.id == mem.id);
 
-                    if (mem.enrollments.Any(enrollment => enrollment.enrollment_state != "active")) return;
+                    if (membersEnrollments.Any(enrollment => enrollment.enrollment_state != "active")) return;
 
                     var newWorkgroupMemberReconcile = new WorkgroupMemberReconcile
                     {
