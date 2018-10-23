@@ -136,15 +136,19 @@ namespace Ecat.Business.Business
                     //var membersWorkGroup = workgroups
                     //    .Where(wg => wg.Members.Select(mem2 => mem2.BbUserId).Contains(mem.id.ToString())).ToList();
 
+                    var membersEnrollments =
+                        membersInSectionNotInAnyWorkgroup.SelectMany(secMember => secMember.enrollments).Where(secMember => secMember.user_id == mem.id).ToList();
+
+                    //Check if student has multiple enrollments and don't add the member if any are inactive
+                    //Not sure how this can happen....more than likely they will just be inactive in one enrollment
+                    if (membersEnrollments.Any(enrollment => enrollment.enrollment_state != "active")) return;
+
+                    //Make sure if the student is active in multiple sections we only return one. 
                     var membersSection = canvasSectionsReturned.Where(section => section.students != null)
                         .Where(section => section.students.Select(stu => stu.id).Contains(mem.id)).ToList().FirstOrDefault();
 
+                    //Get the correct workgroup based on the section returned above. 
                     var membersWorkgroup = workgroups.Where(wg => wg.BbWgId == membersSection.id.ToString()).ToList().FirstOrDefault();
-
-                    var membersEnrollments =
-                        membersInSectionNotInAnyWorkgroup.SelectMany(secMember => secMember.enrollments).Where(secMember => secMember.id == mem.id);
-
-                    if (membersEnrollments.Any(enrollment => enrollment.enrollment_state != "active")) return;
 
                     var newWorkgroupMemberReconcile = new WorkgroupMemberReconcile
                     {
