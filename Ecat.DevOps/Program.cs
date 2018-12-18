@@ -58,11 +58,11 @@ namespace Ecat.DevOps
                     case 6:
                         DbOperations.LoadIST();
                         break;
-                    //case 7:
-                        //DbOperations.ListBbCategoryId();
-                        //break;
+                    default:
+                        Console.WriteLine("\nPlease enter a valid menu option\n");
+                        break;
                 }
-            } while (userSelectOptions != 9);
+            } while (userSelectOptions != 10);
         }
 
 
@@ -83,7 +83,11 @@ namespace Ecat.DevOps
             //Console.WriteLine("9. Get Bb Students By Wg Id");
             Console.WriteLine("10. Exit");
             var result = Console.ReadLine();
-            return Convert.ToInt32(result);
+
+            if (result.All(char.IsDigit))
+                return Convert.ToInt32(result);
+
+            return 0;
         }
     }
 
