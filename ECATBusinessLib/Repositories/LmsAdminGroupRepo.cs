@@ -264,7 +264,11 @@ namespace Ecat.Business.Repositories
                                           gm.AssessorSpResponses.Any() ||
                                           gm.AssesseeStratResponse.Any() ||
                                           gm.AssessorStratResponse.Any() ||
-                                          gm.RecipientOfComments.Any()
+                                          gm.RecipientOfComments.Any() ||
+                                          gm.FacultySpResponses.Any() ||
+                                          gm.FacultyStrat != null ||
+                                          gm.FacultyComment != null
+                                           
                         }).ToList()
                     }).ToList()
                 })
@@ -304,7 +308,12 @@ namespace Ecat.Business.Repositories
                                               gm.AssessorSpResponses.Any() ||
                                               gm.AssesseeStratResponse.Any() ||
                                               gm.AssessorStratResponse.Any() ||
-                                              gm.RecipientOfComments.Any()
+                                              gm.RecipientOfComments.Any() ||
+                                              gm.FacultySpResponses.Any() ||
+                                              gm.FacultyStrat != null ||
+                                              gm.FacultyComment != null
+
+
                             }).ToList()
                         }).ToList()
                 })
@@ -611,16 +620,6 @@ namespace Ecat.Business.Repositories
                             .ToListAsync();
                         ctxManager.Context.StudSpCommentFlags.RemoveRange(studSpCommentFlagsAuthor);
 
-                        var spResults = await ctxManager.Context.SpResults
-                            .Where(stu => stu.StudentId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
-                            .ToListAsync();
-                        ctxManager.Context.SpResults.RemoveRange(spResults);
-
-                        var spStratResults = await ctxManager.Context.SpStratResults
-                            .Where(stu => stu.StudentId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
-                            .ToListAsync();
-                        ctxManager.Context.SpStratResults.RemoveRange(spStratResults);
-
                         var spResponseAssessor = await ctxManager.Context.SpResponses
                             .Where(stu => stu.AssessorPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
                             .ToListAsync();
@@ -631,8 +630,7 @@ namespace Ecat.Business.Repositories
                             .ToListAsync();
                         ctxManager.Context.SpResponses.RemoveRange(spResponseAssessee);
 
-                        // If all existing child records are marked for deletion,
-                        // the student (sig) will successfully be marked for removal from the group
+                        // Mark student record with children for removal from group
                         ctxManager.Context.StudentInGroups.Remove(sig);
                     }
                 }
@@ -650,7 +648,7 @@ namespace Ecat.Business.Repositories
                             }))
                     {
 
-                        // Remove the Parent Student Record From the Group
+                        // Mark childless student record for removal from group
                         ctxManager.Context.Entry(gmrMember).State = System.Data.Entity.EntityState.Deleted;
                     }
                 }
