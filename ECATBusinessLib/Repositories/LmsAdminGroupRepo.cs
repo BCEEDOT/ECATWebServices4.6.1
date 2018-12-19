@@ -553,129 +553,86 @@ namespace Ecat.Business.Repositories
 
                     foreach (var sig in existingStudToFlag)
                     {
-                        System.Diagnostics.Debug.Print("Removed Child records for stuID: " + sig.StudentId.ToString());
-
+                        
                         /* - Quick/Ugly fix to remove child records for members being
-                             removed from non-published groups.
-                           - Changes to the Fluent API to create proper cascading deletes exist
-                             in the Canvas branch that will take affect after generating a new 
-                             init_DB migration.
+                                                    removed from non-published groups.
+                                                  - Changes to the Fluent API to create proper cascading deletes exist
+                                                    in the Canvas branch that will take affect after generating a new 
+                                                    init_DB migration.
                         */
 
-                        // Remove FacSpResponse Child Records
-                        var facSpResponseChildren = await ctxManager.Context.FacSpResponses.Where(stu => stu.AssesseePersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId).ToListAsync();
-                        foreach (var child in facSpResponseChildren)
-                        {
-                            System.Diagnostics.Debug.Print("facSpResponseChildren record removed");
-                            ctxManager.Context.FacSpResponses.Remove(child);
-                        }
+                        var facSpResponses = await ctxManager.Context.FacSpResponses
+                            .Where(stu => stu.AssesseePersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.FacSpResponses.RemoveRange(facSpResponses);
 
-                        // Remove FacStratResponse Child Records
-                        var facStratResponseChild = await ctxManager.Context.FacStratResponses.Where(stu => stu.AssesseePersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId).ToListAsync();
-                        foreach (var child in facStratResponseChild)
-                        {
-                            System.Diagnostics.Debug.Print("facStratResponseChild record removed");
-                            ctxManager.Context.FacStratResponses.Remove(child);
-                        }
+                        var facStratResponses = await ctxManager.Context.FacStratResponses
+                            .Where(stu => stu.AssesseePersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.FacStratResponses.RemoveRange(facStratResponses);
 
-                        // Remove SpStratResponsesAssessor Child Records
-                        var SpStratResponsesAssessorChild = await ctxManager.Context.SpStratResponses.Where(stu => stu.AssessorPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId).ToListAsync();
-                        foreach (var child in SpStratResponsesAssessorChild)
-                        {
-                            System.Diagnostics.Debug.Print("SpStratResponsesAssessorChild record removed");
-                            ctxManager.Context.SpStratResponses.Remove(child);
-                        }
+                        var spStratResponsesAssessor = await ctxManager.Context.SpStratResponses
+                            .Where(stu => stu.AssessorPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.SpStratResponses.RemoveRange(spStratResponsesAssessor);
 
-                        // Remove SpStratResponsesAssessee Child Records
-                        var SpStratResponsesAssesseeChild = await ctxManager.Context.SpStratResponses.Where(stu => stu.AssesseePersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId).ToListAsync();
-                        foreach (var child in SpStratResponsesAssesseeChild)
-                        {
-                            System.Diagnostics.Debug.Print("SpStratResponsesAssesseeChild record removed");
-                            ctxManager.Context.SpStratResponses.Remove(child);
-                        }
+                        var spStratResponsesAssessee = await ctxManager.Context.SpStratResponses
+                            .Where(stu => stu.AssesseePersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.SpStratResponses.RemoveRange(spStratResponsesAssessee);
 
-                        // Remove FacSpComments Child Records
-                        var FacSpCommentsChild = await ctxManager.Context.FacSpComments.Where(stu => stu.RecipientPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId).ToListAsync();
-                        foreach (var child in FacSpCommentsChild)
-                        {
-                            System.Diagnostics.Debug.Print("FacSpCommentsChild record removed");
-                            ctxManager.Context.FacSpComments.Remove(child);
-                        }
+                        var facSpComments = await ctxManager.Context.FacSpComments
+                            .Where(stu => stu.RecipientPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.FacSpComments.RemoveRange(facSpComments);
 
-                        // Remove FacSpCommentFlags Child Records
-                        var FacSpCommentFlagsChild = await ctxManager.Context.FacSpCommentFlags.Where(stu => stu.RecipientPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId).ToListAsync();
-                        foreach (var child in FacSpCommentFlagsChild)
-                        {
-                            System.Diagnostics.Debug.Print("FacSpCommentFlagsChild record removed");
-                            ctxManager.Context.FacSpCommentFlags.Remove(child);
-                        }
+                        var facSpCommentFlags = await ctxManager.Context.FacSpCommentFlags
+                            .Where(stu => stu.RecipientPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.FacSpCommentFlags.RemoveRange(facSpCommentFlags);
 
-                        // Remove StudSpCommentsRecipient Child Records
-                        var StudSpCommentsChild = await ctxManager.Context.StudSpComments.Where(stu => stu.RecipientPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId).ToListAsync();
-                        foreach (var child in StudSpCommentsChild)
-                        {
-                            System.Diagnostics.Debug.Print("StudSpCommentsChild record removed");
-                            ctxManager.Context.StudSpComments.Remove(child);
-                        }
+                        var studSpCommentsRecipient = await ctxManager.Context.StudSpComments
+                            .Where(stu => stu.RecipientPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.StudSpComments.RemoveRange(studSpCommentsRecipient);
 
-                        // Remove StudSpCommentsAuthor Child Records
-                        var StudSpCommentsAuthorChild = await ctxManager.Context.StudSpComments.Where(stu => stu.AuthorPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId).ToListAsync();
-                        foreach (var child in StudSpCommentsAuthorChild)
-                        {
-                            System.Diagnostics.Debug.Print("StudSpCommentsAuthorChild record removed");
-                            ctxManager.Context.StudSpComments.Remove(child);
-                        }
+                        var studSpCommentsAuthor = await ctxManager.Context.StudSpComments
+                            .Where(stu => stu.AuthorPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.StudSpComments.RemoveRange(studSpCommentsAuthor);
 
-                        // Remove StudSpCommentFlagsRecipient Child Records
-                        var StudSpCommentFlagsRecipientChild = await ctxManager.Context.StudSpCommentFlags.Where(stu => stu.RecipientPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId).ToListAsync();
-                        foreach (var child in StudSpCommentFlagsRecipientChild)
-                        {
-                            System.Diagnostics.Debug.Print("StudSpCommentFlagsRecipientChild record removed");
-                            ctxManager.Context.StudSpCommentFlags.Remove(child);
-                        }
+                        var studSpCommentFlagsRecipient = await ctxManager.Context.StudSpCommentFlags
+                            .Where(stu => stu.RecipientPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.StudSpCommentFlags.RemoveRange(studSpCommentFlagsRecipient);
 
-                        // Remove StudSpCommentFlagsAuthor Child Records
-                        var StudSpCommentFlagsAuthorChild = await ctxManager.Context.StudSpCommentFlags.Where(stu => stu.AuthorPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId).ToListAsync();
-                        foreach (var child in StudSpCommentFlagsAuthorChild)
-                        {
-                            System.Diagnostics.Debug.Print("StudSpCommentFlagsAuthorChild record removed");
-                            ctxManager.Context.StudSpCommentFlags.Remove(child);
-                        }
+                        var studSpCommentFlagsAuthor = await ctxManager.Context.StudSpCommentFlags
+                            .Where(stu => stu.AuthorPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.StudSpCommentFlags.RemoveRange(studSpCommentFlagsAuthor);
 
-                        // Remove SpResults Child Records
-                        var SpResultsChild = await ctxManager.Context.SpResults.Where(stu => stu.StudentId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId).ToListAsync();
-                        foreach (var child in SpResultsChild)
-                        {
-                            System.Diagnostics.Debug.Print("SpResultsChild record removed");
-                            ctxManager.Context.SpResults.Remove(child);
-                        }
+                        var spResults = await ctxManager.Context.SpResults
+                            .Where(stu => stu.StudentId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.SpResults.RemoveRange(spResults);
 
+                        var spStratResults = await ctxManager.Context.SpStratResults
+                            .Where(stu => stu.StudentId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.SpStratResults.RemoveRange(spStratResults);
 
-                        // Remove SpStratResults Child Records
-                        var SpStratResultsChild = await ctxManager.Context.SpStratResults.Where(stu => stu.StudentId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId).ToListAsync();
-                        foreach (var child in SpStratResultsChild)
-                        {
-                            System.Diagnostics.Debug.Print("SpStratResultsChild record removed");
-                            ctxManager.Context.SpStratResults.Remove(child);
-                        }
+                        var spResponseAssessor = await ctxManager.Context.SpResponses
+                            .Where(stu => stu.AssessorPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.SpResponses.RemoveRange(spResponseAssessor);
 
-                        // Remove spResponseAssessor Child Records
-                        var spResponseAssessorChild = await ctxManager.Context.SpResponses.Where(stu => stu.AssessorPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId).ToListAsync();
-                        foreach (var child in spResponseAssessorChild)
-                        {
-                            System.Diagnostics.Debug.Print("spResponseAssessorChild record removed");
-                            ctxManager.Context.SpResponses.Remove(child);
-                        }
+                        var spResponseAssessee = await ctxManager.Context.SpResponses
+                            .Where(stu => stu.AssesseePersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.SpResponses.RemoveRange(spResponseAssessee);
 
-                        // Remove spResponseAssessee Child Records
-                        var spResponseAssesseeChild = await ctxManager.Context.SpResponses.Where(stu => stu.AssesseePersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId).ToListAsync();
-                        foreach (var child in spResponseAssesseeChild)
-                        {
-                            System.Diagnostics.Debug.Print("spResponseAssesseeChild record removed");
-                            ctxManager.Context.SpResponses.Remove(child);
-                        }
-
-                        // Remove the Parent Student Record From the Group
+                        // If all existing child records are marked for deletion,
+                        // the student (sig) will successfully be marked for removal from the group
                         ctxManager.Context.StudentInGroups.Remove(sig);
                     }
                 }
