@@ -264,7 +264,11 @@ namespace Ecat.Business.Repositories
                                           gm.AssessorSpResponses.Any() ||
                                           gm.AssesseeStratResponse.Any() ||
                                           gm.AssessorStratResponse.Any() ||
-                                          gm.RecipientOfComments.Any()
+                                          gm.RecipientOfComments.Any() ||
+                                          gm.FacultySpResponses.Any() ||
+                                          gm.FacultyStrat != null ||
+                                          gm.FacultyComment != null
+                                           
                         }).ToList()
                     }).ToList()
                 })
@@ -304,7 +308,12 @@ namespace Ecat.Business.Repositories
                                               gm.AssessorSpResponses.Any() ||
                                               gm.AssesseeStratResponse.Any() ||
                                               gm.AssessorStratResponse.Any() ||
-                                              gm.RecipientOfComments.Any()
+                                              gm.RecipientOfComments.Any() ||
+                                              gm.FacultySpResponses.Any() ||
+                                              gm.FacultyStrat != null ||
+                                              gm.FacultyComment != null
+
+
                             }).ToList()
                         }).ToList()
                 })
@@ -553,15 +562,82 @@ namespace Ecat.Business.Repositories
 
                     foreach (var sig in existingStudToFlag)
                     {
-                        sig.IsDeleted = true;
-                        sig.DeletedById = Faculty?.PersonId;
-                        sig.DeletedDate = DateTime.Now;
-                        sig.ModifiedById = Faculty?.PersonId;
-                        sig.ModifiedDate = DateTime.Now;
+                        
+                        /* - Quick/Ugly fix to remove child records for members being
+                                                    removed from non-published groups.
+                                                  - Changes to the Fluent API to create proper cascading deletes exist
+                                                    in the Canvas branch that will take affect after generating a new 
+                                                    init_DB migration.
+                        */
+
+                        var facSpResponses = await ctxManager.Context.FacSpResponses
+                            .Where(stu => stu.AssesseePersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.FacSpResponses.RemoveRange(facSpResponses);
+
+                        var facStratResponses = await ctxManager.Context.FacStratResponses
+                            .Where(stu => stu.AssesseePersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.FacStratResponses.RemoveRange(facStratResponses);
+
+                        var spStratResponsesAssessor = await ctxManager.Context.SpStratResponses
+                            .Where(stu => stu.AssessorPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.SpStratResponses.RemoveRange(spStratResponsesAssessor);
+
+                        var spStratResponsesAssessee = await ctxManager.Context.SpStratResponses
+                            .Where(stu => stu.AssesseePersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.SpStratResponses.RemoveRange(spStratResponsesAssessee);
+
+                        var facSpComments = await ctxManager.Context.FacSpComments
+                            .Where(stu => stu.RecipientPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.FacSpComments.RemoveRange(facSpComments);
+
+                        var facSpCommentFlags = await ctxManager.Context.FacSpCommentFlags
+                            .Where(stu => stu.RecipientPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.FacSpCommentFlags.RemoveRange(facSpCommentFlags);
+
+                        var studSpCommentsRecipient = await ctxManager.Context.StudSpComments
+                            .Where(stu => stu.RecipientPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.StudSpComments.RemoveRange(studSpCommentsRecipient);
+
+                        var studSpCommentsAuthor = await ctxManager.Context.StudSpComments
+                            .Where(stu => stu.AuthorPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.StudSpComments.RemoveRange(studSpCommentsAuthor);
+
+                        var studSpCommentFlagsRecipient = await ctxManager.Context.StudSpCommentFlags
+                            .Where(stu => stu.RecipientPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.StudSpCommentFlags.RemoveRange(studSpCommentFlagsRecipient);
+
+                        var studSpCommentFlagsAuthor = await ctxManager.Context.StudSpCommentFlags
+                            .Where(stu => stu.AuthorPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.StudSpCommentFlags.RemoveRange(studSpCommentFlagsAuthor);
+
+                        var spResponseAssessor = await ctxManager.Context.SpResponses
+                            .Where(stu => stu.AssessorPersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.SpResponses.RemoveRange(spResponseAssessor);
+
+                        var spResponseAssessee = await ctxManager.Context.SpResponses
+                            .Where(stu => stu.AssesseePersonId == sig.StudentId && stu.WorkGroupId == sig.WorkGroupId)
+                            .ToListAsync();
+                        ctxManager.Context.SpResponses.RemoveRange(spResponseAssessee);
+
+                        // Mark student record with children for removal from group
+                        ctxManager.Context.StudentInGroups.Remove(sig);
                     }
                 }
 
-                foreach (
+                else
+                {
+                    foreach (
                     var gmrMember in
                         group.Members.Where(mem => mem.PendingRemoval && !mem.HasChildren)
                             .Select(mem => new CrseStudentInGroup
@@ -570,13 +646,18 @@ namespace Ecat.Business.Repositories
                                 CourseId = crseId,
                                 StudentId = mem.StudentId,
                             }))
-                {
-                    ctxManager.Context.Entry(gmrMember).State = System.Data.Entity.EntityState.Deleted;
+                    {
+
+                        // Mark childless student record for removal from group
+                        ctxManager.Context.Entry(gmrMember).State = System.Data.Entity.EntityState.Deleted;
+                    }
                 }
 
                 group.ReconResult.NumRemoved = group.Members.Count(mem => mem.PendingRemoval);
             }
+
             await ctxManager.Context.SaveChangesAsync();
+
             return grpWithMems;
         }
 
