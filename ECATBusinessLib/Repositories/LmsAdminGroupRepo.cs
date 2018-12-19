@@ -649,8 +649,6 @@ namespace Ecat.Business.Repositories
                                 StudentId = mem.StudentId,
                             }))
                     {
-                        System.Diagnostics.Debug.Print("Record without Child: ");
-                        System.Diagnostics.Debug.Print(gmrMember.StudentId.ToString());
 
                         // Remove the Parent Student Record From the Group
                         ctxManager.Context.Entry(gmrMember).State = System.Data.Entity.EntityState.Deleted;
