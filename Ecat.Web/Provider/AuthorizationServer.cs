@@ -94,10 +94,29 @@ namespace Ecat.Web.Provider
                 return;
             }
 
+            if (person.Security.BadPasswordCount >= 3)
+            {
+                oauthCtx.SetError("invalid_grant", "You have been locked out. Please contact a system administrator");
+                return;
+            }
+
             var hasValidPassword = PasswordHash.ValidatePassword(oauthCtx.Password, person.Security.PasswordHash);
 
             if (!hasValidPassword)
             {
+                
+                using (var dbCtx = new EcatContext())
+                {
+                    //var personSecurity = dbCtx.Securities.SingleOrDefault(sec => sec.PersonId == person.PersonId);
+
+                    //personSecurity.BadPasswordCount = personSecurity.BadPasswordCount + 1;
+
+                    person.Security.BadPasswordCount = person.Security.BadPasswordCount + 1;
+                    dbCtx.Entry(person.Security).State = System.Data.Entity.EntityState.Modified;
+
+                    await dbCtx.SaveChangesAsync();
+                }
+
                 oauthCtx.SetError("invalid_grant", "Invalid username or password");
                 return;
             }

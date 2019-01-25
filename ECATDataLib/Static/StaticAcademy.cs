@@ -244,7 +244,7 @@ namespace Ecat.Data.Static
             Base = AcademyBase.Lackland,
             BbCategoryId = MpAcadCat.Lackland,
             ParentBbCategoryId = MpAcadCat.NCOA,
-            CanvasAcctId = 1
+            CanvasAcctId = 179
         };
     }
 }

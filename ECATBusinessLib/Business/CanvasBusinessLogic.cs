@@ -249,12 +249,15 @@ namespace Ecat.Business.Business
         private static UserReconcile CreateUserReconcile(CanvasEnrollment canvasEnrollment, int facultyId)
         {
             var nameSplit = canvasEnrollment.user.sortable_name.Split(',');
+            var lastName = nameSplit[0];
+            var firstName = (nameSplit.Length == 1) ? "noName" : nameSplit[1].TrimStart(' ');
+
             var userReconcile = new UserReconcile
             {
                 BbUserId = canvasEnrollment.user_id.ToString(),
                 CourseMemId = canvasEnrollment.id.ToString(),
                 NewEnrollment = true,
-
+             
                 Person = new Person
                 {
                     MpInstituteRole = MpRoleTransform.CanvasRoleToEcat(canvasEnrollment.type),
@@ -262,8 +265,8 @@ namespace Ecat.Business.Business
                     BbUserName = canvasEnrollment.user.login_id,
                     Email = $"{canvasEnrollment.user.login_id}.@us.af.mil",
                     IsActive = true,
-                    LastName = nameSplit[0],
-                    FirstName = nameSplit[1].TrimStart(' '),
+                    LastName = lastName,
+                    FirstName = firstName,
                     MpGender = MpGender.Unk,
                     MpAffiliation = MpAffiliation.Unk,
                     MpComponent = MpComponent.Unk,

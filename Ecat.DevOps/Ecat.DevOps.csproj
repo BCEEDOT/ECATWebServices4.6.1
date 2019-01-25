@@ -62,6 +62,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Elmahsetup.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="DbDevSeedmin.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
